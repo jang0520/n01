@@ -333,17 +333,59 @@ code {
   padding: 2px 10px;
 }
 
-.tarot-desc-box {
-  max-width: 200px;
-  text-align: center;
-}
-.tarot-desc-box .tag-list {
-  justify-content: center;
-  margin-bottom: 10px;
-}
-.tarot-desc-box .body-text { font-size: 13px; line-height: 1.6; }
-
 .body-text { font-size: 14.5px; line-height: 1.7; color: var(--text); }
+
+/* ---------- written reading ---------- */
+.reading-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+  margin: 0 auto 20px;
+}
+.reading-block {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px 24px;
+}
+.reading-block-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.reading-position {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(185,140,255,0.12);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+.reading-card-name { font-size: 16px; font-weight: 700; }
+.reading-orient {
+  font-size: 11px;
+  color: var(--text-dim);
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+.reading-block .tag-list { margin: 12px 0; }
+.reading-block .body-text { margin: 0; }
+
+.synthesis-block {
+  max-width: 720px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, rgba(185,140,255,0.1), rgba(110,198,255,0.08));
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.synthesis-block h3 { margin: 0 0 10px; font-size: 16px; }
+.synthesis-block .body-text { margin: 0; }
 .card-note { color: var(--text-dim); font-size: 13px; }
 
 .tag-list { display: flex; gap: 8px; flex-wrap: wrap; }

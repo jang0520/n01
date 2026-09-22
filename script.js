@@ -175,9 +175,74 @@
 
   /* ---------------- rendering ---------------- */
 
-  function cardDescription(draw) {
-    const keywords = draw.reversed ? draw.card.rev : draw.card.up;
-    return `"${keywords.join("・")}"의 메시지를 전하는 카드입니다.`;
+  function suitGlyph(suit) {
+    return { wands: "🔥", cups: "💧", swords: "🗡", pentacles: "◆" }[suit] || "✦";
+  }
+
+  /* ---------------- reading (interpretation) engine ----------------
+     Combines question + spread position + the drawn card's own
+     orientation, suit/element and keywords into an actual explanatory
+     paragraph, instead of just listing keywords. This is a rule-based
+     template composer (no external AI call) — see the FAQ on the page
+     for why, and what it would take to make this a live model call.
+  */
+
+  const POSITION_PHRASE = {
+    "오늘의 카드": "오늘 하루의 기운으로는",
+    "과거": "지금까지 이어져 온 배경에는",
+    "현재": "지금 이 순간에는",
+    "미래": "앞으로 다가올 흐름에는",
+  };
+
+  const ORIENT_PHRASE = {
+    up: "이 기운이 비교적 또렷하고 자연스러운 방향으로 드러나고 있는 것으로 보입니다.",
+    rev: "이 기운이 어딘가 막혀 있거나 안으로 눌려 있거나, 반대 방향으로 작용하고 있을 가능성이 있습니다.",
+  };
+
+  const SUIT_ADVICE = {
+    wands: "행동으로 옮기기 전에 방향을 한 번 더 점검해보면 좋겠습니다.",
+    cups: "마음이 이끄는 대로, 지금 느끼는 감정을 솔직하게 들여다보는 것이 도움이 될 수 있습니다.",
+    swords: "상황을 냉정하게 정리하고, 필요한 대화나 결정을 미루지 않는 것이 중요해 보입니다.",
+    pentacles: "눈앞의 현실적인 부분부터 하나씩 차근차근 다져나가는 것이 핵심입니다.",
+  };
+  const MAJOR_ADVICE = "인생의 큰 흐름과 맞닿아 있는 메시지이니, 당장의 결과보다 방향성 자체에 집중해보는 것이 좋겠습니다.";
+
+  function hasBatchim(word) {
+    const code = word.charCodeAt(word.length - 1) - 0xac00;
+    if (code < 0 || code > 11171) return true; // not a Hangul syllable, assume consonant-ending
+    return code % 28 !== 0;
+  }
+
+  function eulReul(word) {
+    return hasBatchim(word) ? "을" : "를";
+  }
+
+  function buildReading(question, position, draw) {
+    const { card, reversed } = draw;
+    const kw = reversed ? card.rev : card.up;
+    const orientLabel = reversed ? "역방향" : "정방향";
+    const posPhrase = POSITION_PHRASE[position] || "지금 이 자리에는";
+    const questionPhrase = question ? `"${question}"라는 질문과 연결해보면, ` : "";
+    const orientPhrase = ORIENT_PHRASE[reversed ? "rev" : "up"];
+    const advice = card.arcana === "major" ? MAJOR_ADVICE : SUIT_ADVICE[card.suit];
+    const lastKw = kw[2];
+
+    return (
+      `${questionPhrase}${posPhrase} ${card.ko}(${orientLabel}) 카드가 자리하고 있습니다. ` +
+      `이 카드는 전통적으로 ${kw[0]}, ${kw[1]}, ${lastKw}${eulReul(lastKw)} 상징하는 카드로, ${orientPhrase} ` +
+      advice
+    );
+  }
+
+  function buildSynthesis(question, draws) {
+    const topKeyword = (d) => (d.reversed ? d.card.rev : d.card.up)[0];
+    const [past, present, future] = draws;
+    const qPhrase = question ? `"${question}"에 대해 세 카드를 종합하면, ` : "세 카드를 종합하면, ";
+    return (
+      `${qPhrase}과거의 '${topKeyword(past)}' 흐름에서 출발해, 지금은 '${topKeyword(present)}'의 국면을 지나고 있으며, ` +
+      `이는 앞으로 '${topKeyword(future)}' 쪽으로 이어질 가능성을 보여줍니다. ` +
+      `과거의 배경이 현재의 태도에 영향을 주고, 지금 어떻게 대응하느냐가 다가올 흐름을 바꿀 수 있다는 점을 함께 읽어보시면 좋겠습니다.`
+    );
   }
 
   function renderSpread(question, spreadKey, draws) {
@@ -189,15 +254,23 @@
     row.innerHTML = "";
     row.className = "spread-row spread-" + spreadKey;
 
+    const readingList = document.getElementById("reading-list");
+    readingList.innerHTML = "";
+
+    const synthesisBlock = document.getElementById("synthesis-block");
+
     const positions = SPREADS[spreadKey].positions;
 
     draws.forEach((draw, i) => {
+      const position = positions[i];
+
+      /* visual card */
       const wrap = document.createElement("div");
       wrap.className = "tarot-card-wrap";
 
       const posLabel = document.createElement("div");
       posLabel.className = "tarot-position";
-      posLabel.textContent = positions[i];
+      posLabel.textContent = position;
       wrap.appendChild(posLabel);
 
       const cardEl = document.createElement("div");
@@ -215,26 +288,38 @@
         </div>
       `;
       wrap.appendChild(cardEl);
-
-      const desc = document.createElement("div");
-      desc.className = "tarot-desc-box";
-      const keywords = draw.reversed ? draw.card.rev : draw.card.up;
-      desc.innerHTML = `
-        <div class="tag-list">${keywords.map((k) => `<span class="tag">${k}</span>`).join("")}</div>
-        <p class="body-text">${cardDescription(draw)}</p>
-      `;
-      wrap.appendChild(desc);
-
       row.appendChild(wrap);
 
       setTimeout(() => {
         cardEl.classList.add("flipped");
       }, 150 + i * 250);
-    });
-  }
 
-  function suitGlyph(suit) {
-    return { wands: "🔥", cups: "💧", swords: "🗡", pentacles: "◆" }[suit] || "✦";
+      /* written reading */
+      const keywords = draw.reversed ? draw.card.rev : draw.card.up;
+      const block = document.createElement("div");
+      block.className = "reading-block";
+      block.innerHTML = `
+        <div class="reading-block-head">
+          <span class="reading-position">${position}</span>
+          <span class="reading-card-name">${draw.card.ko}</span>
+          <span class="reading-orient">${draw.reversed ? "역방향" : "정방향"}</span>
+        </div>
+        <div class="tag-list">${keywords.map((k) => `<span class="tag">${k}</span>`).join("")}</div>
+        <p class="body-text">${buildReading(question, position, draw)}</p>
+      `;
+      readingList.appendChild(block);
+    });
+
+    if (spreadKey === "three") {
+      synthesisBlock.classList.remove("hidden");
+      synthesisBlock.innerHTML = `
+        <h3>전체 흐름 정리</h3>
+        <p class="body-text">${buildSynthesis(question, draws)}</p>
+      `;
+    } else {
+      synthesisBlock.classList.add("hidden");
+      synthesisBlock.innerHTML = "";
+    }
   }
 
   /* ---------------- deck browser ---------------- */
