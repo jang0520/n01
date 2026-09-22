@@ -257,12 +257,44 @@
     return `<svg viewBox="0 0 100 100" class="card-svg-icon${extraClass ? " " + extraClass : ""}" aria-hidden="true">${inner}</svg>`;
   }
 
+  // A 12-tick zodiac-style ring drawn behind every major/court icon, and a
+  // shared ground line + four corner stars layered onto majors, so each
+  // medallion reads as a small framed scene instead of one bare glyph.
+  const RING_TICKS = (() => {
+    let s = '<circle cx="50" cy="50" r="47"/>';
+    for (let i = 0; i < 12; i++) {
+      const a = (i * 30 * Math.PI) / 180;
+      const x1 = (50 + 41 * Math.sin(a)).toFixed(1);
+      const y1 = (50 - 41 * Math.cos(a)).toFixed(1);
+      const x2 = (50 + 47 * Math.sin(a)).toFixed(1);
+      const y2 = (50 - 47 * Math.cos(a)).toFixed(1);
+      s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+    }
+    return s;
+  })();
+
+  const GROUND_LINE = '<path d="M14,87 Q50,97 86,87"/>';
+  const STAR_ACCENTS =
+    '<circle cx="14" cy="16" r="1.8" fill="currentColor" stroke="none"/>' +
+    '<circle cx="86" cy="16" r="1.8" fill="currentColor" stroke="none"/>' +
+    '<circle cx="12" cy="50" r="1.4" fill="currentColor" stroke="none"/>' +
+    '<circle cx="88" cy="50" r="1.4" fill="currentColor" stroke="none"/>';
+
   function cardArtHTML(card) {
     if (card.arcana === "major") {
-      return `<div class="card-art major-art"><div class="icon-medallion">${iconSvg(MAJOR_ICON[card.n])}</div></div>`;
+      const icon = MAJOR_ICON[card.n] + GROUND_LINE + STAR_ACCENTS;
+      return `<div class="card-art major-art"><div class="icon-medallion">
+        <div class="medallion-ring">${iconSvg(RING_TICKS)}</div>
+        <div class="medallion-icon">${iconSvg(icon)}</div>
+      </div></div>`;
     }
     if (card.rank >= 11) {
-      return `<div class="card-art court-art"><div class="icon-medallion">${iconSvg(COURT_ICON_PATH[card.rank])}</div></div>`;
+      const icon = COURT_ICON_PATH[card.rank] + GROUND_LINE;
+      return `<div class="card-art court-art"><div class="icon-medallion">
+        <div class="medallion-ring">${iconSvg(RING_TICKS)}</div>
+        <div class="medallion-icon">${iconSvg(icon)}</div>
+        <div class="suit-badge">${iconSvg(SUIT_ICON_PATH[card.suit])}</div>
+      </div></div>`;
     }
     const pips = Array.from({ length: card.rank }, () => iconSvg(SUIT_ICON_PATH[card.suit], "pip-icon")).join("");
     return `<div class="card-art pip-art">${pips}</div>`;
@@ -405,7 +437,10 @@
       cardEl.innerHTML = `
         <div class="tarot-card-inner">
           <div class="tarot-card-face tarot-card-back-design">
-            <div class="back-medallion"><span class="back-mark">☾</span></div>
+            <div class="back-medallion">
+              <div class="medallion-ring">${iconSvg(RING_TICKS)}</div>
+              <span class="back-mark medallion-icon">☾</span>
+            </div>
           </div>
           <div class="tarot-card-face tarot-card-front" style="--card-tint:${cardTint(draw.card)}">
             <span class="corner-index corner-tl">${idx}</span>
