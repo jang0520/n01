@@ -122,6 +122,7 @@
   function buildDeck() {
     const deck = MAJOR_ARCANA.map((c) => ({
       id: `major-${c.n}`,
+      n: c.n,
       name: c.name,
       ko: c.ko,
       arcana: "major",
@@ -139,6 +140,7 @@
           arcana: "minor",
           suit: suit.key,
           suitKo: suit.ko,
+          rank,
           up: entry.up,
           rev: entry.rev,
         });
@@ -173,10 +175,82 @@
     three: { count: 3, positions: ["과거", "현재", "미래"] },
   };
 
-  /* ---------------- rendering ---------------- */
+  /* ---------------- card art (inline SVG icons) ----------------
+     No external image files are fetched — every card gets a small
+     hand-drawn vector icon instead: 22 distinct icons for the Major
+     Arcana, a suit glyph for each of the 4 minor suits, and pip/court
+     layouts built from those suit glyphs, so all 78 cards render
+     visually differently instead of sharing one emoji.
+  */
 
-  function suitGlyph(suit) {
-    return { wands: "🔥", cups: "💧", swords: "🗡", pentacles: "◆" }[suit] || "✦";
+  const SUIT_ICON_PATH = {
+    wands:
+      '<line x1="50" y1="22" x2="50" y2="80"/><path d="M50,10 C56,18 56,27 50,32 C44,27 44,18 50,10 Z" fill="currentColor" stroke="none"/>',
+    cups:
+      '<path d="M32,20 L68,20 L60,50 Q50,58 40,50 Z"/><line x1="50" y1="58" x2="50" y2="72"/><line x1="35" y1="80" x2="65" y2="80"/>',
+    swords:
+      '<line x1="50" y1="16" x2="50" y2="62"/><path d="M50,16 L44,27 L56,27 Z" fill="currentColor" stroke="none"/><line x1="32" y1="62" x2="68" y2="62"/><line x1="50" y1="62" x2="50" y2="84"/>',
+    pentacles:
+      '<circle cx="50" cy="50" r="32"/><path d="M50,26 L58,45 L79,45 L62,57 L69,78 L50,65 L31,78 L38,57 L21,45 L42,45 Z"/>',
+  };
+
+  const SUIT_COLOR_VAR = {
+    wands: "--accent-2",
+    cups: "--accent-3",
+    swords: "--text-dim",
+    pentacles: "--accent",
+  };
+
+  const COURT_ICON_PATH = {
+    11: // Page
+      '<circle cx="50" cy="32" r="10"/><path d="M36,76 L50,46 L64,76 Z"/>',
+    12: // Knight
+      '<path d="M35,62 Q35,32 50,27 Q65,32 65,62 L55,62 L55,46 Q55,39 50,39 Q45,39 45,46 L45,62 Z"/>',
+    13: // Queen
+      '<circle cx="50" cy="48" r="13"/><path d="M35,32 L40,20 L47,29 L50,17 L53,29 L60,20 L65,32 Z"/>',
+    14: // King
+      '<circle cx="50" cy="45" r="13"/><path d="M32,30 L38,17 L44,27 L50,14 L56,27 L62,17 L68,30 Z"/><path d="M30,78 Q50,62 70,78 L70,86 L30,86 Z"/>',
+  };
+
+  const MAJOR_ICON = {
+    0: '<circle cx="50" cy="58" r="9"/><line x1="50" y1="30" x2="50" y2="40"/><line x1="36" y1="36" x2="42" y2="44"/><line x1="64" y1="36" x2="58" y2="44"/><line x1="26" y1="50" x2="35" y2="52"/><line x1="74" y1="50" x2="65" y2="52"/>',
+    1: '<path d="M38,35 C38,29 46,29 50,35 C54,41 62,41 62,35 C62,29 54,29 50,35 C46,41 38,41 38,35 Z"/><line x1="50" y1="45" x2="50" y2="75"/>',
+    2: '<line x1="30" y1="35" x2="30" y2="75"/><line x1="70" y1="35" x2="70" y2="75"/><path d="M42,30 a10,10 0 1,0 16,0 a13,13 0 1,1 -16,0"/>',
+    3: '<circle cx="50" cy="50" r="7"/><circle cx="50" cy="32" r="7"/><circle cx="50" cy="68" r="7"/><circle cx="32" cy="50" r="7"/><circle cx="68" cy="50" r="7"/>',
+    4: '<rect x="34" y="45" width="32" height="32"/><path d="M34,45 L50,25 L66,45 Z"/>',
+    5: '<circle cx="42" cy="35" r="9"/><line x1="42" y1="44" x2="42" y2="75"/><line x1="42" y1="65" x2="52" y2="65"/><line x1="42" y1="72" x2="50" y2="72"/>',
+    6: '<circle cx="42" cy="50" r="16"/><circle cx="58" cy="50" r="16"/>',
+    7: '<rect x="35" y="35" width="30" height="22"/><circle cx="38" cy="68" r="9"/><circle cx="62" cy="68" r="9"/>',
+    8: '<path d="M38,32 C38,26 46,26 50,32 C54,38 62,38 62,32 C62,26 54,26 50,32 C46,38 38,38 38,32 Z"/><path d="M30,65 Q50,80 70,65"/>',
+    9: '<rect x="42" y="45" width="16" height="24" rx="2"/><line x1="50" y1="35" x2="50" y2="45"/><circle cx="50" cy="30" r="5"/><line x1="45" y1="69" x2="55" y2="69"/>',
+    10: '<circle cx="50" cy="50" r="26"/><line x1="50" y1="24" x2="50" y2="76"/><line x1="24" y1="50" x2="76" y2="50"/><line x1="32" y1="32" x2="68" y2="68"/><line x1="68" y1="32" x2="32" y2="68"/>',
+    11: '<line x1="50" y1="20" x2="50" y2="70"/><line x1="30" y1="35" x2="70" y2="35"/><path d="M30,35 L22,50 L38,50 Z"/><path d="M70,35 L62,50 L78,50 Z"/><line x1="38" y1="75" x2="62" y2="75"/>',
+    12: '<line x1="50" y1="20" x2="50" y2="32"/><circle cx="50" cy="42" r="8"/><line x1="50" y1="50" x2="50" y2="70"/><line x1="50" y1="70" x2="38" y2="60"/><line x1="50" y1="70" x2="62" y2="60"/><line x1="50" y1="55" x2="40" y2="45"/><line x1="50" y1="55" x2="60" y2="45"/>',
+    13: '<circle cx="50" cy="42" r="16"/><circle cx="44" cy="40" r="3" fill="currentColor" stroke="none"/><circle cx="56" cy="40" r="3" fill="currentColor" stroke="none"/><path d="M42,50 L44,58 L48,50 L50,58 L52,50 L56,58 L58,50"/>',
+    14: '<path d="M25,30 L40,30 L36,45 Q32,50 28,45 Z"/><path d="M60,55 L75,55 L71,70 Q67,75 63,70 Z"/><line x1="34" y1="38" x2="66" y2="62"/>',
+    15: '<circle cx="50" cy="52" r="14"/><path d="M38,42 L30,28 L42,36 Z"/><path d="M62,42 L70,28 L58,36 Z"/><circle cx="45" cy="50" r="2" fill="currentColor" stroke="none"/><circle cx="55" cy="50" r="2" fill="currentColor" stroke="none"/>',
+    16: '<rect x="42" y="40" width="16" height="40"/><path d="M42,40 L50,25 L58,40"/><path d="M60,20 L50,45 L58,45 L46,75"/>',
+    17: '<path d="M50,24 L57,42 L76,42 L61,54 L67,73 L50,62 L33,73 L39,54 L24,42 L43,42 Z"/><circle cx="20" cy="25" r="2" fill="currentColor" stroke="none"/><circle cx="80" cy="30" r="2" fill="currentColor" stroke="none"/><circle cx="75" cy="70" r="2" fill="currentColor" stroke="none"/>',
+    18: '<path d="M55,25 a25,25 0 1,0 0,50 a19,19 0 1,1 0,-50"/><circle cx="25" cy="30" r="2" fill="currentColor" stroke="none"/><circle cx="30" cy="70" r="2" fill="currentColor" stroke="none"/>',
+    19: '<circle cx="50" cy="50" r="14"/><line x1="50" y1="18" x2="50" y2="28"/><line x1="50" y1="72" x2="50" y2="82"/><line x1="18" y1="50" x2="28" y2="50"/><line x1="72" y1="50" x2="82" y2="50"/><line x1="27" y1="27" x2="34" y2="34"/><line x1="73" y1="27" x2="66" y2="34"/><line x1="27" y1="73" x2="34" y2="66"/><line x1="73" y1="73" x2="66" y2="66"/>',
+    20: '<path d="M30,45 L55,35 L55,55 Z"/><line x1="55" y1="45" x2="72" y2="45"/><circle cx="76" cy="45" r="5"/>',
+    21: '<circle cx="50" cy="50" r="28"/><circle cx="50" cy="50" r="18"/>',
+  };
+
+  function iconSvg(inner, extraClass) {
+    return `<svg viewBox="0 0 100 100" class="card-svg-icon${extraClass ? " " + extraClass : ""}" aria-hidden="true">${inner}</svg>`;
+  }
+
+  function cardArtHTML(card) {
+    if (card.arcana === "major") {
+      return `<div class="card-art major-art" style="color:var(--accent)">${iconSvg(MAJOR_ICON[card.n])}</div>`;
+    }
+    const colorVar = SUIT_COLOR_VAR[card.suit];
+    if (card.rank >= 11) {
+      return `<div class="card-art court-art" style="color:var(${colorVar})">${iconSvg(COURT_ICON_PATH[card.rank])}</div>`;
+    }
+    const pips = Array.from({ length: card.rank }, () => iconSvg(SUIT_ICON_PATH[card.suit], "pip-icon")).join("");
+    return `<div class="card-art pip-art" style="color:var(${colorVar})">${pips}</div>`;
   }
 
   /* ---------------- reading (interpretation) engine ----------------
@@ -318,7 +392,7 @@
             <span class="back-mark">☾</span>
           </div>
           <div class="tarot-card-face tarot-card-front">
-            <div class="tarot-card-art">${draw.card.arcana === "major" ? "✦" : suitGlyph(draw.card.suit)}</div>
+            ${cardArtHTML(draw.card)}
             <div class="tarot-card-name">${draw.card.ko}</div>
             <div class="tarot-card-orient">${draw.reversed ? "역방향" : "정방향"}</div>
           </div>
