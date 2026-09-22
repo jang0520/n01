@@ -194,12 +194,28 @@
       '<circle cx="50" cy="50" r="32"/><path d="M50,26 L58,45 L79,45 L62,57 L69,78 L50,65 L31,78 L38,57 L21,45 L42,45 Z"/>',
   };
 
-  const SUIT_COLOR_VAR = {
-    wands: "--accent-2",
-    cups: "--accent-3",
-    swords: "--text-dim",
-    pentacles: "--accent",
+  /* Dedicated per-suit/major identity colors (fixed hex, independent of
+     light/dark theme) — used for each card's gradient tint, medallion
+     glow and border, like the ink color on a real printed deck. */
+  const MAJOR_HEX = "#b98cff";
+  const SUIT_HEX = {
+    wands: "#ff9d5c",
+    cups: "#5ec3ff",
+    swords: "#8b93a8",
+    pentacles: "#d4af5a",
   };
+
+  function cardTint(card) {
+    return card.arcana === "major" ? MAJOR_HEX : SUIT_HEX[card.suit];
+  }
+
+  const ROMAN = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI"];
+  const COURT_INDEX = { 1: "A", 11: "P", 12: "N", 13: "Q", 14: "K" };
+
+  function cornerIndex(card) {
+    if (card.arcana === "major") return card.n === 0 ? "0" : ROMAN[card.n];
+    return COURT_INDEX[card.rank] || String(card.rank);
+  }
 
   const COURT_ICON_PATH = {
     11: // Page
@@ -243,14 +259,13 @@
 
   function cardArtHTML(card) {
     if (card.arcana === "major") {
-      return `<div class="card-art major-art" style="color:var(--accent)">${iconSvg(MAJOR_ICON[card.n])}</div>`;
+      return `<div class="card-art major-art"><div class="icon-medallion">${iconSvg(MAJOR_ICON[card.n])}</div></div>`;
     }
-    const colorVar = SUIT_COLOR_VAR[card.suit];
     if (card.rank >= 11) {
-      return `<div class="card-art court-art" style="color:var(${colorVar})">${iconSvg(COURT_ICON_PATH[card.rank])}</div>`;
+      return `<div class="card-art court-art"><div class="icon-medallion">${iconSvg(COURT_ICON_PATH[card.rank])}</div></div>`;
     }
     const pips = Array.from({ length: card.rank }, () => iconSvg(SUIT_ICON_PATH[card.suit], "pip-icon")).join("");
-    return `<div class="card-art pip-art" style="color:var(${colorVar})">${pips}</div>`;
+    return `<div class="card-art pip-art">${pips}</div>`;
   }
 
   /* ---------------- reading (interpretation) engine ----------------
@@ -386,12 +401,15 @@
 
       const cardEl = document.createElement("div");
       cardEl.className = "tarot-card" + (draw.reversed ? " is-reversed" : "");
+      const idx = cornerIndex(draw.card);
       cardEl.innerHTML = `
         <div class="tarot-card-inner">
           <div class="tarot-card-face tarot-card-back-design">
-            <span class="back-mark">☾</span>
+            <div class="back-medallion"><span class="back-mark">☾</span></div>
           </div>
-          <div class="tarot-card-face tarot-card-front">
+          <div class="tarot-card-face tarot-card-front" style="--card-tint:${cardTint(draw.card)}">
+            <span class="corner-index corner-tl">${idx}</span>
+            <span class="corner-index corner-br">${idx}</span>
             ${cardArtHTML(draw.card)}
             <div class="tarot-card-name">${draw.card.ko}</div>
             <div class="tarot-card-orient">${draw.reversed ? "역방향" : "정방향"}</div>
