@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사주빅데이터 | 데이터로 보는 나의 사주</title>
+<meta name="description" content="생년월일 정보를 입력하면 빅데이터 분석 방식으로 사주 결과를 보여주는 프로토타입 서비스">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">
+      <span class="brand-mark">命</span>
+      <span class="brand-name">사주<strong>빅데이터</strong></span>
+    </div>
+    <nav class="topnav">
+      <a href="#how">이용방법</a>
+      <a href="#result-section">결과 예시</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <p class="eyebrow">빅데이터 사주 분석 · BETA</p>
+      <h1>당신의 생년월일 데이터로<br>읽어내는 <span class="accent">사주 리포트</span></h1>
+      <p class="hero-desc">
+        누적된 사용자 사주 데이터 패턴을 기반으로 오행 분포, 성향 키워드,
+        오늘의 운세, 행운 아이템까지 한 번에 확인해보세요.
+      </p>
+
+      <form id="fortune-form" class="input-card" autocomplete="off">
+        <div class="field-row">
+          <div class="field">
+            <label for="name">이름 (선택)</label>
+            <input type="text" id="name" placeholder="예: 홍길동" maxlength="10">
+          </div>
+          <div class="field">
+            <label for="gender">성별</label>
+            <select id="gender">
+              <option value="none">선택 안함</option>
+              <option value="f">여성</option>
+              <option value="m">남성</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="birthdate">생년월일 <span class="req">*</span></label>
+            <input type="date" id="birthdate" required min="1920-01-01" max="2026-12-31">
+          </div>
+          <div class="field">
+            <label for="birthtime">태어난 시간 (선택)</label>
+            <select id="birthtime">
+              <option value="unknown">모름</option>
+              <option value="23">자시 (23:00~00:59)</option>
+              <option value="1">축시 (01:00~02:59)</option>
+              <option value="3">인시 (03:00~04:59)</option>
+              <option value="5">묘시 (05:00~06:59)</option>
+              <option value="7">진시 (07:00~08:59)</option>
+              <option value="9">사시 (09:00~10:59)</option>
+              <option value="11">오시 (11:00~12:59)</option>
+              <option value="13">미시 (13:00~14:59)</option>
+              <option value="15">신시 (15:00~16:59)</option>
+              <option value="17">유시 (17:00~18:59)</option>
+              <option value="19">술시 (19:00~20:59)</option>
+              <option value="21">해시 (21:00~22:59)</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="submit-btn">
+          <span class="btn-text">빅데이터로 사주 분석하기</span>
+        </button>
+        <p class="disclaimer">* 본 서비스는 재미를 위한 프로토타입이며, 실제 명리학적 정확성을 보장하지 않습니다.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Loading -->
+  <section id="loading-section" class="loading-section hidden">
+    <div class="wrap">
+      <div class="loading-box">
+        <div class="spinner"></div>
+        <p id="loading-text">사용자 사주 데이터베이스에서 유사 패턴을 검색하는 중...</p>
+        <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Result -->
+  <section id="result-section" class="result-section hidden">
+    <div class="wrap">
+      <div class="result-header">
+        <p class="eyebrow">분석 완료</p>
+        <h2 id="result-title">-님의 사주 빅데이터 리포트</h2>
+        <p class="result-sub" id="result-sub"></p>
+      </div>
+
+      <div class="result-grid">
+
+        <!-- 오행 분포 -->
+        <div class="card">
+          <h3>오행(五行) 분포</h3>
+          <p class="card-note">데이터 기반으로 환산한 목·화·토·금·수 에너지 비율입니다.</p>
+          <div class="ohaeng-list" id="ohaeng-list"></div>
+        </div>
+
+        <!-- 성향 키워드 -->
+        <div class="card">
+          <h3>성향 키워드</h3>
+          <p class="card-note">유사 사주 유형 사용자 데이터에서 가장 많이 나타난 특성입니다.</p>
+          <div class="tag-list" id="keyword-list"></div>
+          <p class="body-text" id="keyword-desc"></p>
+        </div>
+
+        <!-- 오늘의 운세 -->
+        <div class="card wide">
+          <h3>오늘의 운세</h3>
+          <p class="body-text" id="today-fortune"></p>
+          <div class="score-row">
+            <div class="score-item">
+              <span class="score-label">총운</span>
+              <div class="score-bar"><div class="score-fill" id="score-total"></div></div>
+              <span class="score-num" id="score-total-num"></span>
+            </div>
+            <div class="score-item">
+              <span class="score-label">재물운</span>
+              <div class="score-bar"><div class="score-fill" id="score-money"></div></div>
+              <span class="score-num" id="score-money-num"></span>
+            </div>
+            <div class="score-item">
+              <span class="score-label">애정운</span>
+              <div class="score-bar"><div class="score-fill" id="score-love"></div></div>
+              <span class="score-num" id="score-love-num"></span>
+            </div>
+            <div class="score-item">
+              <span class="score-label">건강운</span>
+              <div class="score-bar"><div class="score-fill" id="score-health"></div></div>
+              <span class="score-num" id="score-health-num"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 행운 아이템 -->
+        <div class="card">
+          <h3>행운 아이템</h3>
+          <ul class="lucky-list" id="lucky-list"></ul>
+        </div>
+
+        <!-- 빅데이터 통계 -->
+        <div class="card">
+          <h3>빅데이터 비교 통계</h3>
+          <p class="body-text" id="bigdata-stat"></p>
+          <div class="similar-users" id="similar-users"></div>
+        </div>
+
+      </div>
+
+      <div class="result-footer">
+        <button class="btn-secondary" id="retry-btn">다시 분석하기</button>
+        <p class="disclaimer">본 리포트는 입력하신 생년월일 정보를 바탕으로 서버에 저장 없이 브라우저에서만 계산되며, 엔터테인먼트 목적의 프로토타입 결과입니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how" class="how-section">
+    <div class="wrap">
+      <h2>어떻게 분석하나요?</h2>
+      <div class="how-grid">
+        <div class="how-item">
+          <span class="how-num">1</span>
+          <h4>정보 입력</h4>
+          <p>생년월일과 태어난 시간을 입력합니다. 이름과 성별은 선택 사항입니다.</p>
+        </div>
+        <div class="how-item">
+          <span class="how-num">2</span>
+          <h4>패턴 매칭</h4>
+          <p>축적된 사주 유형 데이터에서 유사한 간지(干支) 패턴을 찾아냅니다.</p>
+        </div>
+        <div class="how-item">
+          <span class="how-num">3</span>
+          <h4>오행 분석</h4>
+          <p>목·화·토·금·수 오행 균형을 계산해 에너지 분포를 시각화합니다.</p>
+        </div>
+        <div class="how-item">
+          <span class="how-num">4</span>
+          <h4>리포트 생성</h4>
+          <p>성향, 오늘의 운세, 행운 아이템을 포함한 개인화 리포트를 즉시 보여드립니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="faq-section">
+    <div class="wrap">
+      <h2>자주 묻는 질문</h2>
+      <details class="faq-item">
+        <summary>입력한 정보는 저장되나요?</summary>
+        <p>아니요. 이 프로토타입은 모든 계산을 브라우저 안에서만 수행하며, 서버로 정보를 전송하거나 저장하지 않습니다.</p>
+      </details>
+      <details class="faq-item">
+        <summary>실제 사주풀이와 동일한가요?</summary>
+        <p>아닙니다. 전통 명리학의 정확한 절기·대운 계산 대신, 데모를 위해 간소화된 알고리즘을 사용합니다. 재미로 즐겨주세요.</p>
+      </details>
+      <details class="faq-item">
+        <summary>태어난 시간을 모르면 어떻게 하나요?</summary>
+        <p>‘모름’을 선택하시면 시주(時柱)를 제외한 나머지 정보로 분석 결과를 보여드립니다.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <p>© 2026 사주빅데이터 (프로토타입). 본 서비스는 오락 목적으로만 제공됩니다.</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
