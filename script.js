@@ -199,6 +199,20 @@
     rev: "이 기운이 어딘가 막혀 있거나 안으로 눌려 있거나, 반대 방향으로 작용하고 있을 가능성이 있습니다.",
   };
 
+  const ORIENT_CAUTION = {
+    up: "다만 좋은 기운일수록 과신하기 쉬우니, 속도를 조절하며 균형을 잃지 않는 것이 중요합니다.",
+    rev: "이런 흐름에서는 조급하게 밀어붙이기보다, 잠시 멈춰서 무엇이 막혀 있는지부터 살펴보는 편이 도움이 됩니다.",
+  };
+
+  const SUIT_ELEMENT = {
+    wands: "완드는 불의 기운을 가진 수트로, 열정・추진력・도전정신처럼 능동적으로 움직이는 상황에서 특히 두드러지게 작용합니다.",
+    cups: "컵은 물의 기운을 가진 수트로, 감정・관계・직관처럼 마음의 흐름과 관련된 부분을 섬세하게 비춰줍니다.",
+    swords: "소드는 공기의 기운을 가진 수트로, 생각・판단・의사소통처럼 머리로 정리해야 하는 국면에서 자주 등장합니다.",
+    pentacles: "펜타클은 흙의 기운을 가진 수트로, 현실적인 여건・재정・일처럼 눈에 보이고 손에 잡히는 흐름을 구체적으로 드러냅니다.",
+  };
+  const MAJOR_ELEMENT =
+    "메이저 아르카나는 전체 78장 중 22장뿐인 만큼, 일상의 사소한 사건보다는 삶 전체의 방향에 영향을 주는 큰 전환점이나 배움을 가리키는 경우가 많습니다.";
+
   const SUIT_ADVICE = {
     wands: "행동으로 옮기기 전에 방향을 한 번 더 점검해보면 좋겠습니다.",
     cups: "마음이 이끄는 대로, 지금 느끼는 감정을 솔직하게 들여다보는 것이 도움이 될 수 있습니다.",
@@ -206,6 +220,13 @@
     pentacles: "눈앞의 현실적인 부분부터 하나씩 차근차근 다져나가는 것이 핵심입니다.",
   };
   const MAJOR_ADVICE = "인생의 큰 흐름과 맞닿아 있는 메시지이니, 당장의 결과보다 방향성 자체에 집중해보는 것이 좋겠습니다.";
+
+  const POSITION_CLOSING = {
+    "오늘의 카드": "오늘 하루, 이 메시지를 마음 한편에 담아두고 지내보시면 좋겠습니다.",
+    "과거": "지나간 일을 곱씹기보다, 그 경험에서 지금 가져올 수 있는 것이 무엇인지에 주목해보세요.",
+    "현재": "지금 느끼는 감정이나 생각을 있는 그대로 인정하는 것부터 시작해보시면 좋겠습니다.",
+    "미래": "아직 오지 않은 시간을 미리 걱정하기보다, 지금 할 수 있는 준비에 집중해보시면 좋겠습니다.",
+  };
 
   function hasBatchim(word) {
     const code = word.charCodeAt(word.length - 1) - 0xac00;
@@ -217,6 +238,10 @@
     return hasBatchim(word) ? "을" : "를";
   }
 
+  function eunNeun(word) {
+    return hasBatchim(word) ? "은" : "는";
+  }
+
   function buildReading(question, position, draw) {
     const { card, reversed } = draw;
     const kw = reversed ? card.rev : card.up;
@@ -224,25 +249,37 @@
     const posPhrase = POSITION_PHRASE[position] || "지금 이 자리에는";
     const questionPhrase = question ? `"${question}"라는 질문과 연결해보면, ` : "";
     const orientPhrase = ORIENT_PHRASE[reversed ? "rev" : "up"];
+    const caution = ORIENT_CAUTION[reversed ? "rev" : "up"];
+    const elementText = card.arcana === "major" ? MAJOR_ELEMENT : SUIT_ELEMENT[card.suit];
     const advice = card.arcana === "major" ? MAJOR_ADVICE : SUIT_ADVICE[card.suit];
+    const closing = POSITION_CLOSING[position] || "";
     const lastKw = kw[2];
 
-    return (
-      `${questionPhrase}${posPhrase} ${card.ko}(${orientLabel}) 카드가 자리하고 있습니다. ` +
-      `이 카드는 전통적으로 ${kw[0]}, ${kw[1]}, ${lastKw}${eulReul(lastKw)} 상징하는 카드로, ${orientPhrase} ` +
-      advice
-    );
+    return [
+      `${questionPhrase}${posPhrase} ${card.ko}(${orientLabel}) 카드가 자리하고 있습니다.`,
+      `이 카드는 전통적으로 ${kw[0]}, ${kw[1]}, ${lastKw}${eulReul(lastKw)} 상징하는 카드로, ${orientPhrase}`,
+      elementText,
+      caution,
+      advice,
+      closing,
+    ]
+      .filter(Boolean)
+      .join(" ");
   }
 
   function buildSynthesis(question, draws) {
     const topKeyword = (d) => (d.reversed ? d.card.rev : d.card.up)[0];
+    const orientOf = (d) => (d.reversed ? "역방향" : "정방향");
     const [past, present, future] = draws;
     const qPhrase = question ? `"${question}"에 대해 세 카드를 종합하면, ` : "세 카드를 종합하면, ";
-    return (
-      `${qPhrase}과거의 '${topKeyword(past)}' 흐름에서 출발해, 지금은 '${topKeyword(present)}'의 국면을 지나고 있으며, ` +
-      `이는 앞으로 '${topKeyword(future)}' 쪽으로 이어질 가능성을 보여줍니다. ` +
-      `과거의 배경이 현재의 태도에 영향을 주고, 지금 어떻게 대응하느냐가 다가올 흐름을 바꿀 수 있다는 점을 함께 읽어보시면 좋겠습니다.`
-    );
+
+    return [
+      `${qPhrase}과거 자리의 ${past.card.ko}(${orientOf(past)})${eunNeun(past.card.ko)} '${topKeyword(past)}'의 흐름에서 지금까지 이어져 온 배경을 보여주고,`,
+      `현재 자리의 ${present.card.ko}(${orientOf(present)})${eunNeun(present.card.ko)} '${topKeyword(present)}'의 국면으로 지금의 상황을 짚어줍니다.`,
+      `그리고 미래 자리의 ${future.card.ko}(${orientOf(future)})${eunNeun(future.card.ko)} '${topKeyword(future)}' 쪽으로 흐름이 이어질 가능성을 보여줍니다.`,
+      `세 카드를 이어서 보면, 과거의 배경이 지금의 태도와 판단에 여전히 영향을 주고 있고, 지금 이 순간 어떻게 대응하느냐가 앞으로의 흐름을 상당 부분 바꿀 수 있다는 점을 함께 읽을 수 있습니다.`,
+      `카드가 가리키는 방향을 정해진 결과로 받아들이기보다, 지금 선택할 수 있는 것이 무엇인지 확인하는 참고 자료로 활용해보시길 권합니다.`,
+    ].join(" ");
   }
 
   function renderSpread(question, spreadKey, draws) {
