@@ -490,18 +490,70 @@
 
   function renderDeckBrowser() {
     const majorGrid = document.getElementById("deck-major");
-    majorGrid.innerHTML = MAJOR_ARCANA.map(
-      (c) => `<span class="tag">${c.n}. ${c.ko}</span>`
-    ).join("");
+    majorGrid.innerHTML = TAROT_DECK.filter((c) => c.arcana === "major")
+      .map((c) => `<button type="button" class="tag deck-tag" data-id="${c.id}">${c.n}. ${c.ko}</button>`)
+      .join("");
 
     SUITS.forEach((suit) => {
       const grid = document.getElementById(`deck-${suit.key}`);
       if (!grid) return;
       const cards = TAROT_DECK.filter((c) => c.suit === suit.key);
       grid.innerHTML = cards
-        .map((c) => `<span class="tag">${c.ko}</span>`)
+        .map((c) => `<button type="button" class="tag deck-tag" data-id="${c.id}">${c.ko}</button>`)
         .join("");
     });
+
+    document.querySelectorAll(".deck-tag").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const card = TAROT_DECK.find((c) => c.id === btn.dataset.id);
+        if (card) openCardModal(card);
+      });
+    });
+  }
+
+  /* ---------------- card detail modal ---------------- */
+
+  function cardMetaLabel(card) {
+    if (card.arcana === "major") return "메이저 아르카나";
+    const suit = SUITS.find((s) => s.key === card.suit);
+    return `마이너 아르카나 · ${suit.ko} (${suit.element})`;
+  }
+
+  function openCardModal(card) {
+    const modal = document.getElementById("card-modal");
+    const body = document.getElementById("card-modal-body");
+    const elementText = card.arcana === "major" ? MAJOR_ELEMENT : SUIT_ELEMENT[card.suit];
+
+    body.innerHTML = `
+      <div class="card-modal-art-wrap" style="--card-tint:${cardTint(card)}">
+        ${cardArtHTML(card)}
+      </div>
+      <div class="card-modal-title">
+        <div class="card-modal-name-ko" id="card-modal-name">${card.ko}</div>
+        <div class="card-modal-name-en">${card.name}</div>
+        <span class="card-modal-meta">${cardMetaLabel(card)}</span>
+      </div>
+      <div class="card-modal-section">
+        <h4>정방향</h4>
+        <div class="tag-list">${card.up.map((k) => `<span class="tag">${k}</span>`).join("")}</div>
+      </div>
+      <div class="card-modal-section">
+        <h4>역방향</h4>
+        <div class="tag-list">${card.rev.map((k) => `<span class="tag">${k}</span>`).join("")}</div>
+      </div>
+      <div class="card-modal-section">
+        <p class="body-text">${elementText}</p>
+      </div>
+    `;
+
+    modal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeCardModal() {
+    const modal = document.getElementById("card-modal");
+    modal.classList.add("hidden");
+    document.body.style.overflow = "";
   }
 
   /* ---------------- flow control ---------------- */
@@ -579,6 +631,14 @@
     retryBtn.addEventListener("click", () => {
       resultSection.classList.add("hidden");
       document.getElementById("fortune-form").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    document.getElementById("card-modal-close").addEventListener("click", closeCardModal);
+    document.getElementById("card-modal-backdrop").addEventListener("click", closeCardModal);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !document.getElementById("card-modal").classList.contains("hidden")) {
+        closeCardModal();
+      }
     });
   }
 
