@@ -1,263 +1,267 @@
 (() => {
   "use strict";
 
-  /* ---------------- seeded PRNG helpers ---------------- */
+  /* =========================================================
+     TAROT DECK DATA
+     78 cards from the traditional (Rider–Waite-style) tarot
+     system: 22 Major Arcana + 56 Minor Arcana (Wands / Cups /
+     Swords / Pentacles). Keywords below reflect the standard,
+     widely-published symbolic meanings for each card in both
+     upright and reversed orientation. This is the entire "data
+     source" behind every reading in this prototype — nothing
+     is fetched from a server or database.
+     ========================================================= */
 
-  function hashString(str) {
-    let h = 2166136261; // FNV-ish base
-    for (let i = 0; i < str.length; i++) {
-      h ^= str.charCodeAt(i);
-      h = Math.imul(h, 16777619);
+  const MAJOR_ARCANA = [
+    { n: 0, name: "The Fool", ko: "바보", up: ["새로운 시작", "순수함", "모험"], rev: ["무모함", "경솔함", "방향 상실"] },
+    { n: 1, name: "The Magician", ko: "마법사", up: ["의지력", "창조", "자원 활용"], rev: ["조작", "재능 낭비", "자신감 부족"] },
+    { n: 2, name: "The High Priestess", ko: "여사제", up: ["직관", "신비", "잠재의식"], rev: ["비밀", "단절된 직관", "혼란"] },
+    { n: 3, name: "The Empress", ko: "여황제", up: ["풍요", "양육", "자연"], rev: ["창조적 막힘", "의존", "과잉보호"] },
+    { n: 4, name: "The Emperor", ko: "황제", up: ["권위", "구조", "통제"], rev: ["경직됨", "권위 남용", "독단"] },
+    { n: 5, name: "The Hierophant", ko: "교황", up: ["전통", "신념", "제도"], rev: ["반항", "새로운 접근", "관습 탈피"] },
+    { n: 6, name: "The Lovers", ko: "연인", up: ["사랑", "조화", "선택"], rev: ["불균형", "잘못된 선택", "갈등"] },
+    { n: 7, name: "The Chariot", ko: "전차", up: ["의지", "승리", "결단"], rev: ["방향 상실", "통제력 부족", "좌절"] },
+    { n: 8, name: "Strength", ko: "힘", up: ["용기", "인내", "내면의 힘"], rev: ["자기 의심", "나약함", "조급함"] },
+    { n: 9, name: "The Hermit", ko: "은둔자", up: ["성찰", "고독", "내면 탐구"], rev: ["고립", "외로움", "길 잃음"] },
+    { n: 10, name: "Wheel of Fortune", ko: "운명의 수레바퀴", up: ["전환점", "운명", "순환"], rev: ["불운", "통제력 상실", "정체"] },
+    { n: 11, name: "Justice", ko: "정의", up: ["공정함", "진실", "인과"], rev: ["불공정", "책임 회피", "편향"] },
+    { n: 12, name: "The Hanged Man", ko: "매달린 사람", up: ["새로운 관점", "항복", "기다림"], rev: ["정체", "저항", "희생의 낭비"] },
+    { n: 13, name: "Death", ko: "죽음", up: ["끝과 시작", "변화", "전환"], rev: ["변화에 대한 저항", "정체", "두려움"] },
+    { n: 14, name: "Temperance", ko: "절제", up: ["균형", "인내", "조화"], rev: ["불균형", "과잉", "조급함"] },
+    { n: 15, name: "The Devil", ko: "악마", up: ["속박", "집착", "물질주의"], rev: ["해방", "자각", "속박에서 벗어남"] },
+    { n: 16, name: "The Tower", ko: "탑", up: ["급격한 변화", "붕괴", "각성"], rev: ["재난 회피", "두려움 지속", "지연된 변화"] },
+    { n: 17, name: "The Star", ko: "별", up: ["희망", "영감", "치유"], rev: ["절망", "신뢰 상실", "막막함"] },
+    { n: 18, name: "The Moon", ko: "달", up: ["환상", "두려움", "잠재의식"], rev: ["혼란 해소", "명료함 회복", "불안 완화"] },
+    { n: 19, name: "The Sun", ko: "태양", up: ["기쁨", "성공", "활력"], rev: ["일시적 우울", "과도한 낙관", "에너지 저하"] },
+    { n: 20, name: "Judgement", ko: "심판", up: ["각성", "재탄생", "소명"], rev: ["자기 의심", "판단 회피", "미련"] },
+    { n: 21, name: "The World", ko: "세계", up: ["완성", "성취", "통합"], rev: ["미완성", "지연된 완성", "마무리 부족"] },
+  ];
+
+  const SUITS = [
+    { key: "wands", name: "Wands", ko: "완드", element: "불", theme: "열정・행동・창조" },
+    { key: "cups", name: "Cups", ko: "컵", element: "물", theme: "감정・관계・직관" },
+    { key: "swords", name: "Swords", ko: "소드", element: "공기", theme: "생각・갈등・소통" },
+    { key: "pentacles", name: "Pentacles", ko: "펜타클", element: "흙", theme: "현실・물질・일" },
+  ];
+
+  const RANK_LABELS = {
+    1: "에이스", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6", 7: "7", 8: "8", 9: "9", 10: "10",
+    11: "페이지", 12: "나이트", 13: "퀸", 14: "킹",
+  };
+
+  const WANDS = {
+    1: { up: ["새로운 시작", "영감", "잠재력"], rev: ["지연된 시작", "동기 부족", "막힘"] },
+    2: { up: ["계획", "미래 설계", "발전"], rev: ["두려움", "우유부단", "계획 부재"] },
+    3: { up: ["확장", "예측", "해외 진출"], rev: ["지연", "장애물", "좁은 시야"] },
+    4: { up: ["축하", "안정", "조화"], rev: ["불화", "취소", "불안정"] },
+    5: { up: ["경쟁", "갈등", "도전"], rev: ["내부 갈등", "회피", "긴장 해소"] },
+    6: { up: ["승리", "인정", "자신감"], rev: ["자만", "지연된 성공", "불안한 승리"] },
+    7: { up: ["방어", "맞섬", "끈기"], rev: ["압도됨", "포기", "지친 저항"] },
+    8: { up: ["빠른 진행", "움직임", "소식"], rev: ["지연", "좌절", "혼선"] },
+    9: { up: ["인내", "경계심", "회복력"], rev: ["소진", "편집증", "방어적 태도"] },
+    10: { up: ["부담", "책임", "과로"], rev: ["짐 내려놓기", "위임", "한계 인식"] },
+    11: { up: ["탐험", "열정", "새로운 아이디어"], rev: ["무모함", "방향성 부족", "산만함"] },
+    12: { up: ["모험", "충동", "열정적 행동"], rev: ["조급함", "무모한 도전", "성급한 결정"] },
+    13: { up: ["자신감", "독립성", "따뜻한 카리스마"], rev: ["요구적 태도", "질투", "불안정한 자신감"] },
+    14: { up: ["비전", "리더십", "대담함"], rev: ["오만", "성급함", "독단적 결정"] },
+  };
+
+  const CUPS = {
+    1: { up: ["새로운 사랑", "감정의 시작", "직관"], rev: ["감정 억압", "공허함", "놓친 기회"] },
+    2: { up: ["파트너십", "연결", "상호 이끌림"], rev: ["불균형", "이별", "어긋난 마음"] },
+    3: { up: ["우정", "축하", "공동체"], rev: ["과잉", "고립", "소문"] },
+    4: { up: ["무관심", "명상", "재평가"], rev: ["새로운 동기", "각성", "기회 포착"] },
+    5: { up: ["상실", "후회", "슬픔"], rev: ["수용", "앞으로 나아감", "치유"] },
+    6: { up: ["향수", "어린 시절", "재회"], rev: ["과거에 얽매임", "미숙함", "현실 도피"] },
+    7: { up: ["환상", "선택지", "백일몽"], rev: ["명확함", "현실적 선택", "우선순위 정리"] },
+    8: { up: ["떠남", "내면 탐구", "실망"], rev: ["두려움에 머무름", "정체", "미련"] },
+    9: { up: ["만족", "소원 성취", "행복"], rev: ["과욕", "물질적 만족의 공허", "자기 만족"] },
+    10: { up: ["조화", "가족의 행복", "정서적 충만"], rev: ["깨진 관계", "불화", "어긋난 기대"] },
+    11: { up: ["감수성", "창의적 메시지", "직관적 시작"], rev: ["정서적 미성숙", "백일몽", "실망"] },
+    12: { up: ["낭만", "매력", "이상주의"], rev: ["변덕", "비현실적 기대", "감정 기복"] },
+    13: { up: ["공감", "양육", "직관"], rev: ["감정 과잉", "의존", "불안정한 정서"] },
+    14: { up: ["정서적 균형", "외교", "지혜"], rev: ["감정 조작", "냉담함", "억압된 감정"] },
+  };
+
+  const SWORDS = {
+    1: { up: ["명료함", "돌파구", "진실"], rev: ["혼란", "잘못된 정보", "판단 착오"] },
+    2: { up: ["결정 보류", "균형", "딜레마"], rev: ["우유부단", "정보 회피", "긴장 고조"] },
+    3: { up: ["상심", "슬픔", "배신"], rev: ["회복", "용서", "치유의 시작"] },
+    4: { up: ["휴식", "회복", "명상"], rev: ["소진", "정체", "강제된 휴식"] },
+    5: { up: ["갈등", "패배", "자기 이익"], rev: ["화해", "후회", "관계 회복"] },
+    6: { up: ["이행", "전환", "회복으로 향함"], rev: ["정체", "미해결 문제", "과거에 발목"] },
+    7: { up: ["전략", "기만", "회피"], rev: ["자백", "죄책감", "발각"] },
+    8: { up: ["속박", "제한된 신념", "무력감"], rev: ["자기 해방", "새로운 관점", "제약 극복"] },
+    9: { up: ["불안", "걱정", "악몽"], rev: ["절망", "내면의 어둠", "불안 해소"] },
+    10: { up: ["종결", "바닥", "고통의 끝"], rev: ["회복", "저항", "느린 재기"] },
+    11: { up: ["호기심", "경계", "새로운 아이디어"], rev: ["성급한 판단", "소문", "무례함"] },
+    12: { up: ["결단력", "야망", "빠른 행동"], rev: ["무모함", "공격성", "충동적 결정"] },
+    13: { up: ["독립적 사고", "명확한 경계", "정직"], rev: ["냉정함", "비판적 태도", "고독"] },
+    14: { up: ["지적 권위", "진실", "명확한 판단"], rev: ["조작", "권위 남용", "독선"] },
+  };
+
+  const PENTACLES = {
+    1: { up: ["새로운 기회", "번영의 시작", "풍요"], rev: ["놓친 기회", "계획 부족", "불안정한 시작"] },
+    2: { up: ["균형", "적응", "우선순위 조정"], rev: ["과부하", "불균형", "우선순위 혼란"] },
+    3: { up: ["협업", "기술", "팀워크"], rev: ["불협화음", "낮은 기준", "소통 부족"] },
+    4: { up: ["안정", "저축", "통제"], rev: ["집착", "인색함", "변화에 대한 두려움"] },
+    5: { up: ["경제적 어려움", "소외", "불안"], rev: ["회복", "지원 발견", "상황 개선"] },
+    6: { up: ["나눔", "관용", "균형 잡힌 교환"], rev: ["빚", "이기심", "불공정한 거래"] },
+    7: { up: ["인내", "장기적 투자", "평가"], rev: ["조급함", "부족한 보상", "방향 재검토"] },
+    8: { up: ["장인정신", "숙련", "헌신"], rev: ["완벽주의", "단조로움", "품질 저하"] },
+    9: { up: ["풍요", "독립", "자기 충족"], rev: ["재정적 과시", "고립", "불안정한 풍요"] },
+    10: { up: ["유산", "장기적 성공", "가족의 부"], rev: ["재정적 손실", "가족 갈등", "불안정한 기반"] },
+    11: { up: ["학구열", "새로운 기술", "실용적 계획"], rev: ["게으름", "비현실적 목표", "산만함"] },
+    12: { up: ["근면", "신뢰성", "꾸준함"], rev: ["정체", "지루함", "느린 진행"] },
+    13: { up: ["실용성", "양육", "풍요로움"], rev: ["일과 삶의 불균형", "과잉보호", "불안정"] },
+    14: { up: ["재정적 성공", "안정", "리더십"], rev: ["물질주의", "완고함", "권위적 태도"] },
+  };
+
+  const MINOR_TABLE = { wands: WANDS, cups: CUPS, swords: SWORDS, pentacles: PENTACLES };
+
+  function buildDeck() {
+    const deck = MAJOR_ARCANA.map((c) => ({
+      id: `major-${c.n}`,
+      name: c.name,
+      ko: c.ko,
+      arcana: "major",
+      up: c.up,
+      rev: c.rev,
+    }));
+    SUITS.forEach((suit) => {
+      const table = MINOR_TABLE[suit.key];
+      for (let rank = 1; rank <= 14; rank++) {
+        const entry = table[rank];
+        deck.push({
+          id: `${suit.key}-${rank}`,
+          name: `${RANK_LABELS[rank]} of ${suit.name}`,
+          ko: `${suit.ko} ${RANK_LABELS[rank]}`,
+          arcana: "minor",
+          suit: suit.key,
+          suitKo: suit.ko,
+          up: entry.up,
+          rev: entry.rev,
+        });
+      }
+    });
+    return deck;
+  }
+
+  const TAROT_DECK = buildDeck();
+
+  /* ---------------- draw logic ---------------- */
+
+  function shuffledIndices(n) {
+    const arr = Array.from({ length: n }, (_, i) => i);
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
     }
-    return h >>> 0;
+    return arr;
   }
 
-  function mulberry32(seed) {
-    let a = seed;
-    return function () {
-      a |= 0;
-      a = (a + 0x6d2b79f5) | 0;
-      let t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
+  function drawCards(count) {
+    const order = shuffledIndices(TAROT_DECK.length).slice(0, count);
+    return order.map((idx) => ({
+      card: TAROT_DECK[idx],
+      reversed: Math.random() < 0.5,
+    }));
   }
 
-  function randRange(rand, min, max) {
-    return min + rand() * (max - min);
-  }
-
-  function pick(rand, arr) {
-    return arr[Math.floor(rand() * arr.length)];
-  }
-
-  /* ---------------- domain data ---------------- */
-
-  const ELEMENTS = [
-    { key: "wood", label: "목(木)", varName: "--ohaeng-wood" },
-    { key: "fire", label: "화(火)", varName: "--ohaeng-fire" },
-    { key: "earth", label: "토(土)", varName: "--ohaeng-earth" },
-    { key: "metal", label: "금(金)", varName: "--ohaeng-metal" },
-    { key: "water", label: "수(水)", varName: "--ohaeng-water" },
-  ];
-
-  function seasonBias(month) {
-    // Traditional seasonal correspondence: spring-wood, summer-fire,
-    // autumn-metal, winter-water, with earth as the transitional element.
-    if ([3, 4, 5].includes(month)) return { wood: 1.6, fire: 1.1, earth: 1.0, metal: 0.8, water: 0.8 };
-    if ([6, 7, 8].includes(month)) return { fire: 1.6, earth: 1.2, wood: 0.9, metal: 0.8, water: 0.7 };
-    if ([9, 10, 11].includes(month)) return { metal: 1.6, earth: 1.1, water: 1.0, wood: 0.8, fire: 0.7 };
-    return { water: 1.6, wood: 1.0, metal: 0.9, fire: 0.7, earth: 0.8 }; // 12, 1, 2
-  }
-
-  const LUCKY_BY_ELEMENT = {
-    wood: { colors: ["초록", "연두"], numbers: [3, 8], direction: "동쪽", item: "화분/식물" },
-    fire: { colors: ["빨강", "주황"], numbers: [2, 7], direction: "남쪽", item: "캔들/조명" },
-    earth: { colors: ["황토", "베이지"], numbers: [5, 10], direction: "중앙", item: "도자기 소품" },
-    metal: { colors: ["흰색", "은색"], numbers: [4, 9], direction: "서쪽", item: "액세서리" },
-    water: { colors: ["검정", "남색"], numbers: [1, 6], direction: "북쪽", item: "수경식물/어항" },
+  const SPREADS = {
+    one: { count: 1, positions: ["오늘의 카드"] },
+    three: { count: 3, positions: ["과거", "현재", "미래"] },
   };
-
-  const KEYWORD_BANK = {
-    wood: ["성장 지향형", "창의적 리더형", "추진력 있는", "유연한 사고", "확장을 즐기는"],
-    fire: ["열정적인", "표현력 강한", "사교적인", "직관적인", "무대에 강한"],
-    earth: ["신뢰감 있는", "안정 추구형", "책임감 강한", "포용력 있는", "균형 잡힌"],
-    metal: ["원칙주의형", "분석적인", "결단력 있는", "완결을 중시하는", "정돈된"],
-    water: ["지혜로운", "적응력 강한", "통찰력 있는", "차분한", "전략적인"],
-  };
-
-  const PERSONALITY_DESC = {
-    wood: "새로운 시도를 두려워하지 않고 아이디어를 실행으로 옮기는 힘이 강한 유형입니다. 성장과 확장의 기운이 강해 변화가 많은 환경에서 오히려 두각을 나타냅니다.",
-    fire: "표현력과 에너지가 넘쳐 주변 사람들에게 영향력을 미치는 유형입니다. 감정 표현이 솔직하고 새로운 관계를 맺는 데 거리낌이 없습니다.",
-    earth: "묵묵히 신뢰를 쌓아가는 유형으로, 조직이나 관계에서 중심을 잡아주는 역할을 합니다. 급격한 변화보다는 꾸준함에서 힘을 얻습니다.",
-    metal: "기준이 명확하고 맺고 끊음이 분명한 유형입니다. 분석적이고 체계적인 접근을 선호하며, 완결성 있는 결과물을 만들어내는 데 강점이 있습니다.",
-    water: "상황에 따라 유연하게 형태를 바꾸는 지혜를 지닌 유형입니다. 겉으로는 잔잔하지만 내면에는 깊은 통찰과 전략적 사고가 자리잡고 있습니다.",
-  };
-
-  const TODAY_FORTUNE_TEMPLATES = [
-    "오늘은 {dom} 기운이 강해지는 날로, 평소보다 {trait} 모습이 두드러질 수 있습니다. 작은 결정도 확신을 갖고 밀고 나가보세요.",
-    "{dom} 기운과 오늘의 흐름이 맞물려 주변 사람과의 교류에서 좋은 기회가 생길 수 있습니다. {trait} 태도를 유지하면 도움이 됩니다.",
-    "오늘은 무리한 확장보다 {trait} 자세로 하루를 차분히 정리하는 편이 유리한 흐름입니다. {dom} 기운을 조절하는 것이 관건입니다.",
-    "{dom} 기운이 도움을 주는 하루입니다. 미뤄뒀던 일을 {trait} 마음으로 다시 들여다보면 실마리를 찾을 수 있습니다.",
-  ];
-
-  const SIMILAR_TRAIT_LABEL = {
-    wood: "창의적 리더형",
-    fire: "표현력 강한 활동형",
-    earth: "안정 추구형",
-    metal: "원칙주의 분석형",
-    water: "전략적 적응형",
-  };
-
-  /* ---------------- core calculation ---------------- */
-
-  function computeOhaeng(dateStr, hourVal, gender, rand) {
-    const [y, m, d] = dateStr.split("-").map(Number);
-    const bias = seasonBias(m);
-    const raw = {};
-    ELEMENTS.forEach(({ key }) => {
-      const jitter = randRange(rand, 0.7, 1.3);
-      raw[key] = (bias[key] || 1) * jitter;
-    });
-    const sum = Object.values(raw).reduce((a, b) => a + b, 0);
-    const pct = {};
-    ELEMENTS.forEach(({ key }) => {
-      pct[key] = Math.max(5, Math.round((raw[key] / sum) * 100));
-    });
-    // normalize rounding drift back to 100
-    let diff = 100 - Object.values(pct).reduce((a, b) => a + b, 0);
-    const order = ELEMENTS.map((e) => e.key).sort((a, b) => pct[b] - pct[a]);
-    pct[order[0]] += diff;
-    return pct;
-  }
-
-  function dominantElements(pct) {
-    const sorted = ELEMENTS.map((e) => e.key).sort((a, b) => pct[b] - pct[a]);
-    return { dominant: sorted[0], secondary: sorted[1] };
-  }
-
-  function buildSeed(dateStr, hourVal, gender, extra) {
-    return hashString(`${dateStr}|${hourVal}|${gender}|${extra || ""}`);
-  }
-
-  function runAnalysis(input) {
-    const { name, gender, dateStr, hourVal } = input;
-    const coreSeed = buildSeed(dateStr, hourVal, gender, "core");
-    const rand = mulberry32(coreSeed);
-
-    const pct = computeOhaeng(dateStr, hourVal, gender, rand);
-    const { dominant, secondary } = dominantElements(pct);
-
-    const keywordRand = mulberry32(buildSeed(dateStr, hourVal, gender, "keywords"));
-    const keywords = [
-      pick(keywordRand, KEYWORD_BANK[dominant]),
-      pick(keywordRand, KEYWORD_BANK[secondary]),
-    ];
-
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const todayRand = mulberry32(buildSeed(dateStr, hourVal, gender, "today-" + todayStr));
-    const template = pick(todayRand, TODAY_FORTUNE_TEMPLATES);
-    const todayFortune = template
-      .replaceAll("{dom}", ELEMENTS.find((e) => e.key === dominant).label)
-      .replaceAll("{trait}", pick(todayRand, KEYWORD_BANK[dominant]));
-
-    const scores = {
-      total: Math.round(randRange(todayRand, 55, 95)),
-      money: Math.round(randRange(todayRand, 45, 95)),
-      love: Math.round(randRange(todayRand, 45, 95)),
-      health: Math.round(randRange(todayRand, 45, 95)),
-    };
-
-    const lucky = LUCKY_BY_ELEMENT[dominant];
-
-    const statRand = mulberry32(buildSeed(dateStr, hourVal, gender, "stat"));
-    const sampleSize = Math.round(randRange(statRand, 8000, 25000));
-    const matchPct = Math.round(randRange(statRand, 62, 88));
-
-    return {
-      name: name && name.trim() ? name.trim() : "고객",
-      pct,
-      dominant,
-      secondary,
-      keywords,
-      personalityDesc: PERSONALITY_DESC[dominant],
-      todayFortune,
-      scores,
-      lucky,
-      sampleSize,
-      matchPct,
-      dominantLabel: SIMILAR_TRAIT_LABEL[dominant],
-    };
-  }
 
   /* ---------------- rendering ---------------- */
 
-  function renderResult(result) {
-    document.getElementById("result-title").textContent = `${result.name}님의 사주 빅데이터 리포트`;
-    document.getElementById("result-sub").textContent =
-      `주 오행: ${ELEMENTS.find((e) => e.key === result.dominant).label} · 보조 오행: ${ELEMENTS.find((e) => e.key === result.secondary).label}`;
+  function cardDescription(draw) {
+    const keywords = draw.reversed ? draw.card.rev : draw.card.up;
+    return `"${keywords.join("・")}"의 메시지를 전하는 카드입니다.`;
+  }
 
-    const ohaengList = document.getElementById("ohaeng-list");
-    ohaengList.innerHTML = "";
-    ELEMENTS.forEach(({ key, label, varName }) => {
-      const row = document.createElement("div");
-      row.className = "ohaeng-row";
-      row.innerHTML = `
-        <span class="ohaeng-name">${label}</span>
-        <span class="ohaeng-track"><span class="ohaeng-fill" style="background:var(${varName})"></span></span>
-        <span class="ohaeng-pct">${result.pct[key]}%</span>
+  function renderSpread(question, spreadKey, draws) {
+    document.getElementById("reading-question").textContent = question
+      ? `"${question}"에 대한 리딩`
+      : "오늘의 타로 리딩";
+
+    const row = document.getElementById("spread-row");
+    row.innerHTML = "";
+    row.className = "spread-row spread-" + spreadKey;
+
+    const positions = SPREADS[spreadKey].positions;
+
+    draws.forEach((draw, i) => {
+      const wrap = document.createElement("div");
+      wrap.className = "tarot-card-wrap";
+
+      const posLabel = document.createElement("div");
+      posLabel.className = "tarot-position";
+      posLabel.textContent = positions[i];
+      wrap.appendChild(posLabel);
+
+      const cardEl = document.createElement("div");
+      cardEl.className = "tarot-card" + (draw.reversed ? " is-reversed" : "");
+      cardEl.innerHTML = `
+        <div class="tarot-card-inner">
+          <div class="tarot-card-face tarot-card-back-design">
+            <span class="back-mark">☾</span>
+          </div>
+          <div class="tarot-card-face tarot-card-front">
+            <div class="tarot-card-art">${draw.card.arcana === "major" ? "✦" : suitGlyph(draw.card.suit)}</div>
+            <div class="tarot-card-name">${draw.card.ko}</div>
+            <div class="tarot-card-orient">${draw.reversed ? "역방향" : "정방향"}</div>
+          </div>
+        </div>
       `;
-      ohaengList.appendChild(row);
-      requestAnimationFrame(() => {
-        row.querySelector(".ohaeng-fill").style.width = result.pct[key] + "%";
-      });
+      wrap.appendChild(cardEl);
+
+      const desc = document.createElement("div");
+      desc.className = "tarot-desc-box";
+      const keywords = draw.reversed ? draw.card.rev : draw.card.up;
+      desc.innerHTML = `
+        <div class="tag-list">${keywords.map((k) => `<span class="tag">${k}</span>`).join("")}</div>
+        <p class="body-text">${cardDescription(draw)}</p>
+      `;
+      wrap.appendChild(desc);
+
+      row.appendChild(wrap);
+
+      setTimeout(() => {
+        cardEl.classList.add("flipped");
+      }, 150 + i * 250);
     });
+  }
 
-    const keywordList = document.getElementById("keyword-list");
-    keywordList.innerHTML = "";
-    result.keywords.forEach((kw) => {
-      const span = document.createElement("span");
-      span.className = "tag";
-      span.textContent = kw;
-      keywordList.appendChild(span);
+  function suitGlyph(suit) {
+    return { wands: "🔥", cups: "💧", swords: "🗡", pentacles: "◆" }[suit] || "✦";
+  }
+
+  /* ---------------- deck browser ---------------- */
+
+  function renderDeckBrowser() {
+    const majorGrid = document.getElementById("deck-major");
+    majorGrid.innerHTML = MAJOR_ARCANA.map(
+      (c) => `<span class="tag">${c.n}. ${c.ko}</span>`
+    ).join("");
+
+    SUITS.forEach((suit) => {
+      const grid = document.getElementById(`deck-${suit.key}`);
+      if (!grid) return;
+      const cards = TAROT_DECK.filter((c) => c.suit === suit.key);
+      grid.innerHTML = cards
+        .map((c) => `<span class="tag">${c.ko}</span>`)
+        .join("");
     });
-    document.getElementById("keyword-desc").textContent = result.personalityDesc;
-
-    document.getElementById("today-fortune").textContent = result.todayFortune;
-
-    [
-      ["total", "score-total", "score-total-num"],
-      ["money", "score-money", "score-money-num"],
-      ["love", "score-love", "score-love-num"],
-      ["health", "score-health", "score-health-num"],
-    ].forEach(([key, barId, numId]) => {
-      const val = result.scores[key];
-      document.getElementById(numId).textContent = val;
-      const bar = document.getElementById(barId);
-      requestAnimationFrame(() => {
-        bar.style.width = val + "%";
-      });
-    });
-
-    const luckyList = document.getElementById("lucky-list");
-    luckyList.innerHTML = "";
-    const luckyRows = [
-      ["행운의 색", result.lucky.colors.join(", ")],
-      ["행운의 숫자", result.lucky.numbers.join(", ")],
-      ["행운의 방향", result.lucky.direction],
-      ["행운의 아이템", result.lucky.item],
-    ];
-    luckyRows.forEach(([label, value]) => {
-      const li = document.createElement("li");
-      li.innerHTML = `<span class="lucky-label">${label}</span><span class="lucky-value">${value}</span>`;
-      luckyList.appendChild(li);
-    });
-
-    document.getElementById("bigdata-stat").textContent =
-      `당신과 같은 '${result.dominantLabel}' 오행 우세 유형 사용자 데이터 ${result.sampleSize.toLocaleString()}명 중 약 ${result.matchPct}%가 비슷한 성향 키워드를 보였습니다. (예시용 통계이며 실제 데이터가 아닙니다)`;
-
-    const similarUsers = document.getElementById("similar-users");
-    similarUsers.innerHTML = "";
-    const avatarStack = document.createElement("div");
-    avatarStack.className = "avatar-stack";
-    for (let i = 0; i < 5; i++) {
-      const span = document.createElement("span");
-      avatarStack.appendChild(span);
-    }
-    const countSpan = document.createElement("span");
-    countSpan.className = "similar-count";
-    countSpan.textContent = `${result.sampleSize.toLocaleString()}명과 유사한 패턴`;
-    similarUsers.appendChild(avatarStack);
-    similarUsers.appendChild(countSpan);
   }
 
   /* ---------------- flow control ---------------- */
 
   const LOADING_STEPS = [
-    "사용자 사주 데이터베이스에서 유사 패턴을 검색하는 중...",
-    "생년월일 데이터를 오행(五行) 값으로 환산하는 중...",
-    "유사 사용자 그룹과 성향 데이터를 비교하는 중...",
-    "리포트를 생성하는 중...",
+    "카드를 섞는 중...",
+    "질문의 흐름을 읽는 중...",
+    "카드를 펼치는 중...",
+    "리딩을 완성하는 중...",
   ];
 
   function runLoadingAnimation(onDone) {
@@ -290,27 +294,33 @@
   }
 
   function init() {
+    renderDeckBrowser();
+
     const form = document.getElementById("fortune-form");
     const submitBtn = document.getElementById("submit-btn");
     const resultSection = document.getElementById("result-section");
     const retryBtn = document.getElementById("retry-btn");
+    const spreadButtons = document.querySelectorAll(".spread-btn");
+    let selectedSpread = "one";
+
+    spreadButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        spreadButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedSpread = btn.dataset.spread;
+      });
+    });
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-
-      const dateStr = document.getElementById("birthdate").value;
-      if (!dateStr) return;
-
-      const name = document.getElementById("name").value;
-      const gender = document.getElementById("gender").value;
-      const hourVal = document.getElementById("birthtime").value;
+      const question = document.getElementById("question").value.trim();
 
       submitBtn.disabled = true;
       resultSection.classList.add("hidden");
 
       runLoadingAnimation(() => {
-        const result = runAnalysis({ name, gender, dateStr, hourVal });
-        renderResult(result);
+        const draws = drawCards(SPREADS[selectedSpread].count);
+        renderSpread(question, selectedSpread, draws);
         resultSection.classList.remove("hidden");
         resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
         submitBtn.disabled = false;
