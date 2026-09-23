@@ -315,11 +315,6 @@
     "미래": "앞으로 다가올 흐름에는",
   };
 
-  const ORIENT_PHRASE = {
-    up: "이 기운이 비교적 또렷하고 자연스러운 방향으로 드러나고 있는 것으로 보입니다.",
-    rev: "이 기운이 어딘가 막혀 있거나 안으로 눌려 있거나, 반대 방향으로 작용하고 있을 가능성이 있습니다.",
-  };
-
   const ORIENT_CAUTION = {
     up: "다만 좋은 기운일수록 과신하기 쉬우니, 속도를 조절하며 균형을 잃지 않는 것이 중요합니다.",
     rev: "이런 흐름에서는 조급하게 밀어붙이기보다, 잠시 멈춰서 무엇이 막혀 있는지부터 살펴보는 편이 도움이 됩니다.",
@@ -363,22 +358,36 @@
     return hasBatchim(word) ? "은" : "는";
   }
 
+  function buildMeaningSentence(card, reversed) {
+    const lastUp = card.up[2];
+    if (!reversed) {
+      return `이 카드는 정방향으로 나와, ${card.up[0]}, ${card.up[1]}, ${lastUp}${eulReul(lastUp)} 상징하는 기운이 또렷하고 자연스럽게 드러나고 있는 것으로 보입니다.`;
+    }
+    // Reversed cards get their own dedicated keyword set (card.rev), not
+    // "the upright meaning, flipped by the reader" — the upright keyword is
+    // only named here for contrast, so the reversed meaning that follows
+    // reads as the actual interpretation rather than an instruction to
+    // invert it yourself.
+    const lastRev = card.rev[2];
+    return (
+      `이 카드는 역방향으로 나왔습니다. 정방향이었다면 '${card.up[0]}'처럼 순조롭게 드러났을 기운이지만, ` +
+      `지금은 그렇지 않고 ${card.rev[0]}, ${card.rev[1]}, ${lastRev}${eulReul(lastRev)} 상징하는 쪽으로 나타나고 있습니다.`
+    );
+  }
+
   function buildReading(question, position, draw) {
     const { card, reversed } = draw;
-    const kw = reversed ? card.rev : card.up;
     const orientLabel = reversed ? "역방향" : "정방향";
     const posPhrase = POSITION_PHRASE[position] || "지금 이 자리에는";
     const questionPhrase = question ? `"${question}"라는 질문과 연결해보면, ` : "";
-    const orientPhrase = ORIENT_PHRASE[reversed ? "rev" : "up"];
     const caution = ORIENT_CAUTION[reversed ? "rev" : "up"];
     const elementText = card.arcana === "major" ? MAJOR_ELEMENT : SUIT_ELEMENT[card.suit];
     const advice = card.arcana === "major" ? MAJOR_ADVICE : SUIT_ADVICE[card.suit];
     const closing = POSITION_CLOSING[position] || "";
-    const lastKw = kw[2];
 
     return [
       `${questionPhrase}${posPhrase} ${card.ko}(${orientLabel}) 카드가 자리하고 있습니다.`,
-      `이 카드는 전통적으로 ${kw[0]}, ${kw[1]}, ${lastKw}${eulReul(lastKw)} 상징하는 카드로, ${orientPhrase}`,
+      buildMeaningSentence(card, reversed),
       elementText,
       caution,
       advice,
