@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>숙요사주 | 달의 자리와 사주로 읽는 나와 우리</title>
+<meta name="description" content="숙요(27수)와 사주팔자를 하나로 엮어 개인의 성격과 두 사람의 궁합을 풀어보는 프로토타입 서비스">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="saju.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand brand-link" href="saju.html">
+      <span class="brand-mark">☾</span>
+      <span class="brand-name">숙요<strong>사주</strong></span>
+    </a>
+    <nav class="topnav">
+      <a href="#analyze">성격·궁합</a>
+      <a href="#method">풀이 방식</a>
+      <a href="#faq">FAQ</a>
+      <a href="index.html">타로 →</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="analyze">
+    <div class="wrap hero-inner">
+      <p class="eyebrow">숙요 27수 × 사주팔자 · BETA</p>
+      <h1>달의 자리와 사주로 읽는<br><span class="accent">나, 그리고 우리</span></h1>
+      <p class="hero-desc">
+        태어난 날 달이 머문 별자리(숙요)와 태어난 순간의 기운(사주)을
+        따로 보지 않고 하나로 엮어, 성격과 관계를 함께 풀어드립니다.
+      </p>
+
+      <div class="mode-tabs" role="tablist">
+        <button type="button" class="mode-tab active" role="tab" aria-selected="true" data-mode="personal">나의 성격<span>한 사람의 기질 풀이</span></button>
+        <button type="button" class="mode-tab" role="tab" aria-selected="false" data-mode="compat">궁합 보기<span>두 사람의 관계 풀이</span></button>
+      </div>
+
+      <!-- 개인 성격 -->
+      <form id="personal-form" class="input-card saju-card" autocomplete="off" novalidate>
+        <h3 class="form-title">나의 성격 보기</h3>
+        <div class="person-fields" data-prefix="p"></div>
+        <div class="advanced-slot"></div>
+        <button type="submit" class="btn-primary">성격 풀이 보기</button>
+        <p class="form-error hidden" role="alert"></p>
+      </form>
+
+      <!-- 궁합 -->
+      <form id="compat-form" class="input-card saju-card compat-card hidden" autocomplete="off" novalidate>
+        <h3 class="form-title">두 사람의 궁합 보기</h3>
+        <div class="field">
+          <label for="rel-type">두 사람은 어떤 관계인가요?</label>
+          <select id="rel-type">
+            <option value="love">연인·부부</option>
+            <option value="friend">친구</option>
+            <option value="work">직장·동료</option>
+            <option value="family">가족</option>
+          </select>
+        </div>
+        <div class="compat-grid">
+          <fieldset class="person-box">
+            <legend>첫 번째 사람</legend>
+            <div class="person-fields" data-prefix="a"></div>
+          </fieldset>
+          <fieldset class="person-box">
+            <legend>두 번째 사람</legend>
+            <div class="person-fields" data-prefix="b"></div>
+          </fieldset>
+        </div>
+        <div class="advanced-slot"></div>
+        <button type="submit" class="btn-primary">궁합 풀이 보기</button>
+        <p class="form-error hidden" role="alert"></p>
+      </form>
+
+      <p class="disclaimer hero-disclaimer">* 재미로 보는 프로토타입입니다. 입력한 정보는 브라우저 안에서만 계산되고 저장·전송되지 않습니다.</p>
+    </div>
+  </section>
+
+  <section id="result-section" class="result-section hidden" aria-live="polite">
+    <div class="wrap" id="result-root"></div>
+  </section>
+
+  <section id="method" class="how-section">
+    <div class="wrap">
+      <h2>어떻게 풀이하나요?</h2>
+      <div class="how-grid">
+        <div class="how-item">
+          <span class="how-num">1</span>
+          <h4>달의 자리 찾기 (숙요)</h4>
+          <p>생일을 음력으로 바꿔, 그날 달이 머문 27개 별자리 중 하나인 본명숙을 찾습니다.</p>
+        </div>
+        <div class="how-item">
+          <span class="how-num">2</span>
+          <h4>여덟 글자 세우기 (사주)</h4>
+          <p>절기를 기준으로 연·월·일·시의 천간과 지지를 구하고, 오행 분포와 십신 구조를 봅니다.</p>
+        </div>
+        <div class="how-item">
+          <span class="how-num">3</span>
+          <h4>두 체계 엮기</h4>
+          <p>본명숙과 일간·오행·십신을 8가지 성향 축으로 옮겨 합산하고, 두 체계가 겹치는 지점과 엇갈리는 지점을 함께 읽습니다.</p>
+        </div>
+        <div class="how-item">
+          <span class="how-num">4</span>
+          <h4>관계 읽기 (궁합)</h4>
+          <p>숙요의 삼구법 관계와 사주의 일간·일지·띠 관계, 오행 보완을 끌림·소통·안정·성장 네 축으로 합쳐 점수를 냅니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="faq-section">
+    <div class="wrap">
+      <h2>자주 묻는 질문</h2>
+      <details class="faq-item">
+        <summary>숙요(宿曜)는 무엇인가요?</summary>
+        <p>달이 하늘을 한 바퀴 도는 길을 27개 구역(27수)으로 나누고, 태어난 날 달이 머문 구역을 본명숙으로 삼는 점성술입니다.
+        불교 경전 『숙요경』에서 유래해 일본에서 널리 쓰였습니다. 이 페이지는 음력 월마다 시작 숙이 정해진 전통 표(1월 실수, 2월 규수 …)를 사용합니다.</p>
+      </details>
+      <details class="faq-item">
+        <summary>태어난 시간을 모르면 어떻게 되나요?</summary>
+        <p>숙요는 날짜만으로 계산되어 영향이 없습니다. 사주는 시주를 빼고 연·월·일 세 기둥(여섯 글자)으로 풀이합니다.
+        다만 절기가 바뀌는 날에 태어났다면 시간에 따라 월주가 달라질 수 있어, 이 경우 정오 기준으로 계산합니다.</p>
+      </details>
+      <details class="faq-item">
+        <summary>출생 지역(경도) 보정은 왜 하나요?</summary>
+        <p>한국 표준시는 동경 135도를 기준으로 하지만 서울은 약 127도에 있어 실제 태양 시각과 30분가량 차이가 납니다.
+        사주의 일주·시주는 태양 시각으로 보는 경우가 많아 기본값으로 보정합니다. 과거 서머타임(1948~1960년, 1987~1988년)과
+        표준시 변경(1954~1961년 UTC+8:30)도 자동으로 반영합니다. 고급 설정에서 보정을 끌 수 있습니다.</p>
+      </details>
+      <details class="faq-item">
+        <summary>자시(밤 11시~새벽 1시) 출생은 어떻게 보나요?</summary>
+        <p>기본값은 밤 11시부터 다음 날로 보는 방식입니다. 고급 설정에서 '자정 기준'(야자시)을 고르면 밤 11시~자정 출생은
+        그날의 일주를 그대로 쓰고 시주만 다음 날 자시로 계산합니다. 유파마다 견해가 다르므로 익숙한 방식을 고르세요.</p>
+      </details>
+      <details class="faq-item">
+        <summary>음력·절기 데이터는 어디서 왔나요?</summary>
+        <p>음력은 한국천문연구원 기준의 음력 데이터(1900~2049년)를, 절기 시각은 천문 계산(태양 황경)으로 미리 구해 <code>saju-data.js</code>에 담았습니다.
+        그래서 1901년부터 2049년 사이의 생일을 계산할 수 있습니다.</p>
+      </details>
+      <details class="faq-item">
+        <summary>풀이 문장은 AI가 쓰는 건가요?</summary>
+        <p>아니요. 27수, 10개 일간, 오행, 십신, 궁합 관계마다 준비된 해석을 규칙에 따라 섞어 문장을 만듭니다.
+        같은 생년월일시를 넣으면 항상 같은 결과가 나옵니다.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<template id="advanced-template">
+  <details class="advanced">
+    <summary>고급 설정 (출생 지역·자시 기준)</summary>
+    <div class="advanced-body">
+      <div class="field">
+        <label>출생 지역 (진태양시 보정)</label>
+        <select class="adv-city">
+          <option value="126.98">서울·경기</option>
+          <option value="126.70">인천</option>
+          <option value="127.73">춘천</option>
+          <option value="128.90">강릉</option>
+          <option value="127.49">청주</option>
+          <option value="127.38">대전</option>
+          <option value="127.15">전주</option>
+          <option value="126.85">광주</option>
+          <option value="128.60">대구</option>
+          <option value="129.31">울산</option>
+          <option value="129.08">부산</option>
+          <option value="128.68">창원</option>
+          <option value="126.53">제주</option>
+          <option value="none">보정 안 함 (표준시 그대로)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>자시(23:00~01:00) 날짜 기준</label>
+        <div class="seg">
+          <label><input type="radio" class="adv-zasi" value="early" checked> 23시부터 다음 날</label>
+          <label><input type="radio" class="adv-zasi" value="midnight"> 자정 기준 (야자시)</label>
+        </div>
+      </div>
+    </div>
+  </details>
+</template>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <p>© 2026 숙요사주 (프로토타입). 본 서비스는 오락 목적으로만 제공됩니다.</p>
+  </div>
+</footer>
+
+<script src="saju-data.js"></script>
+<script src="saju.js"></script>
+</body>
+</html>
