@@ -19,23 +19,23 @@
 
   // 오행: 0 목 1 화 2 토 3 금 4 수 (상생: e → e+1, 상극: e → e+2)
   const ELEMENTS = [
-    { name: "목", hanja: "木", cls: "el-wood", color: "초록·청록", dir: "동쪽", season: "봄", num: "3·8",
+    { name: "목", kw: "성장과 시작의 힘", hanja: "木", cls: "el-wood", color: "초록·청록", dir: "동쪽", season: "봄", num: "3·8",
       act: "산책, 식물 가꾸기, 새로운 배움",
       strong: "성장 욕구와 추진하는 힘이 강해 새 일을 벌이길 좋아하지만, 고집이 세지거나 일을 너무 많이 펼치기 쉬워요.",
       weak: "새로 시작하는 힘이나 자기 확신이 약해질 때가 있어요. 작게라도 먼저 시작해 보는 연습이 도움이 돼요." },
-    { name: "화", hanja: "火", cls: "el-fire", color: "빨강·주황·보라", dir: "남쪽", season: "여름", num: "2·7",
+    { name: "화", kw: "열정과 표현력", hanja: "火", cls: "el-fire", color: "빨강·주황·보라", dir: "남쪽", season: "여름", num: "2·7",
       act: "운동, 햇볕 쬐기, 사람 만나기",
       strong: "열정과 표현력이 넘치고 분위기를 밝게 만들지만, 쉽게 달아오르고 빨리 식는 면도 있어요.",
       weak: "속으로는 뜨거워도 겉으로 잘 드러내지 않아요. 감정과 생각을 조금 더 표현하면 인정받기 쉬워져요." },
-    { name: "토", hanja: "土", cls: "el-earth", color: "노랑·베이지·갈색", dir: "중앙", season: "환절기", num: "5·10",
+    { name: "토", kw: "안정감과 신뢰", hanja: "土", cls: "el-earth", color: "노랑·베이지·갈색", dir: "중앙", season: "환절기", num: "5·10",
       act: "규칙적인 생활, 정리정돈, 등산",
       strong: "믿음직하고 중심을 잘 잡지만, 변화를 싫어하고 생각이 무거워질 수 있어요.",
       weak: "생각이 여기저기로 흩어지기 쉬워요. 루틴과 생활 리듬을 만들면 마음이 안정돼요." },
-    { name: "금", hanja: "金", cls: "el-metal", color: "흰색·은색·금색", dir: "서쪽", season: "가을", num: "4·9",
+    { name: "금", kw: "결단력과 원칙", hanja: "金", cls: "el-metal", color: "흰색·은색·금색", dir: "서쪽", season: "가을", num: "4·9",
       act: "계획 세우기, 악기·공예, 결단 연습",
       strong: "결단력과 원칙이 분명해 맺고 끊음이 확실하지만, 말이 날카롭게 들릴 때가 있어요.",
       weak: "결정을 미루거나 거절을 어려워할 수 있어요. 기준을 미리 정해 두면 훨씬 편해져요." },
-    { name: "수", hanja: "水", cls: "el-water", color: "검정·남색", dir: "북쪽", season: "겨울", num: "1·6",
+    { name: "수", kw: "지혜와 유연함", hanja: "水", cls: "el-water", color: "검정·남색", dir: "북쪽", season: "겨울", num: "1·6",
       act: "독서, 명상, 물가 산책, 충분한 휴식",
       strong: "생각이 깊고 유연하며 지혜롭지만, 걱정이 많거나 속마음을 감추는 경향이 있어요.",
       weak: "쉬지 않고 달리다 지치기 쉬워요. 충분한 휴식과 혼자만의 생각 시간이 필요해요." }
@@ -401,6 +401,219 @@
   }
 
   /* =========================================================
+   * 5-1. 상세 풀이 데이터 (연애·일·성장, 계절, 일지, 신강·신약, 올해 흐름)
+   * ========================================================= */
+  // SUKU와 같은 순서 (昴부터)
+  const SUKU_MORE = [
+    { love: "연애에서도 품위와 격을 중요하게 여겨요. 아무나 쉽게 마음에 들이지 않지만, 한번 인정한 사람에게는 정성스럽고 세심하게 대해요. 자존심 때문에 먼저 다가가지 못해 기회를 놓치지 않도록, 호감은 조금 더 솔직하게 표현해 보세요.",
+      work: "미적 감각과 교양이 살아나는 분야, 문화·예술·교육·브랜드·고급 서비스처럼 '격'이 중요한 일에서 두각을 나타내요. 윗사람의 인정을 받으며 성장하는 타입이라 좋은 멘토를 만나는 것이 중요해요.",
+      growth: "자존심을 지키는 것과 고집을 부리는 것은 달라요. 내 기준에 맞지 않는 사람에게서도 배울 점을 찾으면 품격이 더 넓어져요." },
+    { love: "천천히, 그러나 깊게 사랑하는 타입이에요. 처음엔 무뚝뚝해 보여도 시간이 지날수록 한결같은 마음이 드러나 상대에게 큰 안정감을 줘요. 표현이 서툴러 상대가 마음을 확인하고 싶어 할 수 있으니 작은 말 한마디로 자주 마음을 전해 주세요.",
+      work: "꾸준함이 성과로 이어지는 분야, 연구·기술·금융·부동산·농업처럼 오래 쌓아야 빛나는 일에 잘 맞아요. 한 분야에서 오래 버티며 전문성을 쌓을수록 유리해요.",
+      growth: "끈기는 큰 무기지만, 방향이 틀렸을 때 빨리 멈추는 것도 실력이에요. 중간 점검의 시간을 정해 두세요." },
+    { love: "대화가 통하는 상대에게 끌리고 말로 마음을 표현하는 데 능해요. 관계에서도 손익을 따지는 신중함이 있어 쉽게 휩쓸리지 않지만, 너무 재다 보면 상대가 거리감을 느낄 수 있어요. 계산 없이 마음이 가는 순간을 믿어 보는 것도 필요해요.",
+      work: "말과 숫자를 함께 다루는 일, 영업·협상·컨설팅·금융·강의처럼 설득력이 성과가 되는 분야에서 강해요. 실리를 챙기는 감각 덕분에 재테크에도 소질이 있어요.",
+      growth: "말솜씨가 좋은 만큼 듣는 시간을 늘리면 신뢰가 훨씬 깊어져요. 이익보다 사람을 먼저 챙길 때 더 큰 이익이 돌아와요." },
+    { love: "자극과 새로움이 있는 관계를 좋아해요. 지루한 연애는 견디기 힘들어하고, 함께 새로운 경험을 하는 상대에게 끌려요. 직설적인 말이 상처가 될 수 있으니 솔직함에 따뜻함을 조금 더해 주세요.",
+      work: "변화가 빠른 분야, IT·스타트업·미디어·기획처럼 개혁이 필요한 곳에서 능력을 발휘해요. 틀에 박힌 일보다 문제를 새로 정의하고 바꾸는 역할이 잘 맞아요.",
+      growth: "모든 것을 바꾸려 하기보다 지킬 것과 바꿀 것을 구분하면 개혁이 더 큰 지지를 얻어요." },
+    { love: "감정보다 신뢰와 대화로 관계를 쌓아요. 상대의 고민을 논리적으로 풀어 주려 하지만, 때로는 해결책보다 공감이 필요하다는 것을 기억하면 좋아요. 지적인 대화가 통하는 상대와 오래가요.",
+      work: "분석·법률·연구·기획·IT·회계처럼 논리와 정확성이 핵심인 분야에 강해요. 복잡한 문제를 구조화하는 능력이 있어 참모나 전문가로 인정받아요.",
+      growth: "옳은 말도 전하는 방식에 따라 다르게 들려요. 결론보다 상대의 감정을 먼저 묻는 습관이 관계를 부드럽게 해 줘요." },
+    { love: "순수하고 정이 많아 사랑에 빠지면 아이처럼 솔직해져요. 구속받는 것은 싫어하지만 상대에게 따뜻하고 헌신적이에요. 마음 가는 대로 움직이다 상대를 헷갈리게 할 수 있으니 약속은 꼭 지켜 주세요.",
+      work: "직관과 영감을 살릴 수 있는 일, 예술·종교·심리·여행·복지처럼 사람의 마음에 닿는 분야가 잘 맞아요. 자유로운 근무 환경에서 능력이 더 살아나요.",
+      growth: "번뜩이는 시작은 이미 충분해요. 끝까지 마무리하는 습관 하나만 더하면 재능이 결과로 바뀌어요." },
+    { love: "사랑에 온 마음을 쏟는 열정적인 연인이에요. 상대에게 깊이 몰입하고 헌신하지만, 그만큼 상대의 반응에 민감해 감정 기복을 겪기 쉬워요. 나만의 시간과 취미를 지키는 것이 오히려 관계를 건강하게 해요.",
+      work: "몰입이 필요한 분야, 전문 기술·연구·예술·의료처럼 한 우물을 파는 일에서 대가가 될 수 있어요. 좋아하는 일을 할 때 누구보다 큰 성과를 내요.",
+      growth: "열정이 집착이 되지 않도록, 결과를 내려놓고 과정을 즐기는 연습을 해 보세요." },
+    { love: "쉽게 기대지 않는 독립적인 사랑을 해요. 상대에게 의존하기보다 각자의 길을 존중하는 관계를 원해요. 혼자 해결하려는 습관 때문에 상대가 소외감을 느낄 수 있으니 고민을 나누는 연습이 필요해요.",
+      work: "스스로 길을 개척하는 일, 창업·전문직·연구·관리직처럼 책임과 자율이 큰 자리가 잘 맞아요. 시간이 지날수록 실력을 인정받는 대기만성형 커리어를 그려요.",
+      growth: "혼자 감당하는 것이 강함의 전부는 아니에요. 도움을 청하는 용기가 더 큰 성공으로 가는 지름길이 돼요." },
+    { love: "사랑받고 인정받을 때 가장 빛나요. 화려하고 즐거운 연애를 좋아하며 상대를 기쁘게 하는 표현에 능해요. 상대의 관심이 줄면 크게 서운해할 수 있으니, 내가 먼저 상대를 주인공으로 만들어 주는 순간도 가져 보세요.",
+      work: "무대와 사람 앞에 서는 일, 방송·엔터테인먼트·영업·홍보·강연·리더 역할에서 존재감을 발휘해요. 인정과 보상이 분명한 환경에서 의욕이 커져요.",
+      growth: "박수가 없어도 스스로를 인정하는 힘을 기르면 흔들림 없이 오래 빛날 수 있어요." },
+    { love: "함께 꿈을 그릴 수 있는 사람에게 끌려요. 성실하게 관계를 이어 가지만 이상이 높아 상대에게 기대가 커질 수 있어요. 먼 거리나 새로운 환경도 마다하지 않는 넓은 마음을 가진 연인이에요.",
+      work: "넓은 무대가 어울려요. 해외·무역·여행·교육·연구처럼 시야를 넓히는 일, 장기 목표를 향해 꾸준히 나아가는 일에서 성과를 내요.",
+      growth: "먼 목표만 보다가 지금의 작은 성취를 놓치지 않도록, 중간 목표를 세우고 스스로를 칭찬해 주세요." },
+    { love: "누구에게나 친절하고 대화가 즐거워 인기가 많아요. 다만 모두에게 다정한 모습이 연인에게는 불안함을 줄 수 있으니, 특별한 사람에게만 보여 주는 표현을 따로 준비해 두세요.",
+      work: "사람과 정보를 연결하는 일, 영업·유통·여행·홍보·중개·서비스 분야에서 감각이 빛나요. 빠른 정보력으로 기회를 먼저 잡는 편이에요.",
+      growth: "모두를 맞추다 내 중심을 잃지 않도록, 나에게 정말 중요한 것이 무엇인지 정기적으로 점검해 보세요." },
+    { love: "밝고 즐거운 연애를 해요. 데이트 감각이 좋고 분위기를 잘 만들어 상대를 즐겁게 하지만, 진지한 대화는 피하려는 경향이 있을 수 있어요. 즐거움 속에서도 깊은 이야기를 나눌 때 관계가 단단해져요.",
+      work: "감각과 사교성을 살리는 일, 패션·뷰티·디자인·서비스·홍보·엔터테인먼트 분야가 잘 맞아요. 사람들과 함께 일하는 환경에서 에너지가 살아나요.",
+      growth: "즐거움을 아는 것은 큰 재능이에요. 여기에 꾸준함을 더하면 재능이 경력이 돼요." },
+    { love: "정직하고 곧은 사랑을 해요. 거짓이나 애매한 태도를 싫어하고, 옳다고 생각하는 것을 상대에게도 분명히 말해요. 다툼에서 이기려 하기보다 상대의 입장을 먼저 들어 주면 관계가 훨씬 편해져요.",
+      work: "정의감과 추진력을 살릴 수 있는 일, 법조·언론·공공·감사·시민단체처럼 원칙이 중요한 분야에서 빛나요. 부당한 일을 바로잡는 역할에 사명감을 느껴요.",
+      growth: "모든 싸움에 나설 필요는 없어요. 지킬 원칙과 넘어갈 일을 구분하면 신념의 힘이 더 강해져요." },
+    { love: "마음에 드는 사람이 생기면 끈기 있게 다가가는 적극적인 타입이에요. 관계에서도 현실적인 미래를 함께 그리는 것을 중요하게 여겨요. 상대를 내 뜻대로 이끌기보다 속도를 맞춰 주세요.",
+      work: "목표가 분명한 일, 사업·영업·경영·부동산·금융처럼 성과와 보상이 뚜렷한 분야에서 강해요. 야망이 동력이 되어 높은 자리까지 올라갈 수 있어요.",
+      growth: "원하는 것을 얻는 힘은 충분해요. 얻은 것을 나누는 여유가 생기면 사람도 함께 따라와요." },
+    { love: "온화하고 다정해 함께 있으면 편안한 연인이에요. 타고난 인복 덕분에 좋은 인연을 만나기 쉽고 갈등을 부드럽게 넘기는 능력이 있어요. 다만 불편한 이야기를 미루다 쌓아 두지 않도록 주의하세요.",
+      work: "사람과 재물이 모이는 분야, 금융·서비스·호텔·외식·인사·공공기관처럼 안정적이고 신뢰가 중요한 곳에서 꾸준히 성장해요.",
+      growth: "복은 나눌수록 커져요. 편안함에 안주하지 않고 작은 도전을 이어 가면 타고난 운이 더 크게 피어나요." },
+    { love: "상대의 마음을 읽고 원하는 것을 먼저 알아채는 매력적인 연인이에요. 하지만 정작 자신의 속마음은 잘 드러내지 않아 상대가 거리감을 느낄 수 있어요. 가끔은 꾸밈없이 솔직한 감정을 보여 주세요.",
+      work: "사람의 마음을 다루는 일, 심리·상담·마케팅·연기·인사·영업처럼 통찰력이 필요한 분야에서 탁월해요. 분위기를 읽고 조율하는 능력으로 조직에서도 중요한 역할을 맡아요.",
+      growth: "모두에게 맞는 얼굴을 보여 주느라 지칠 때는, 나를 있는 그대로 받아 주는 사람 곁에서 쉬어 가세요." },
+    { love: "한번 마음을 정하면 끝까지 가는 진지한 사랑을 해요. 깊고 진한 관계를 원하지만 질투나 독점욕이 강해질 수 있어요. 믿음을 주고받는 연습이 관계를 오래 지켜 줘요.",
+      work: "끝까지 파고드는 일, 연구·의료·엔지니어링·스포츠·전문 기술처럼 깊이와 근성이 필요한 분야에서 최고가 될 수 있어요.",
+      growth: "포기하지 않는 것만큼 '이번에는 내려놓자'고 판단하는 것도 용기예요. 유연함이 근성을 완성해요." },
+    { love: "솔직하고 시원한 사랑을 해요. 밀고 당기기보다 직진하는 편이고, 서로의 자유를 존중하는 관계를 원해요. 간섭받기 싫은 만큼 상대에게도 같은 자유를 주면 좋아요.",
+      work: "스케일이 큰 일, 사업·무역·투자·스포츠·현장 지휘처럼 대담한 결단이 필요한 분야에서 능력을 발휘해요. 독립적으로 일할 때 성과가 커요.",
+      growth: "말의 힘이 강한 만큼, 한 번 더 생각하고 말하는 습관이 사람을 오래 곁에 두게 해 줘요." },
+    { love: "상대를 이끌고 지켜 주는 듬직한 연인이에요. 관계에서도 높은 이상과 비전을 함께 나누길 원해요. 상대의 의견을 묻고 함께 결정하는 습관이 관계를 더 단단하게 만들어요.",
+      work: "리더십이 필요한 자리, 경영·정치·군·경찰·교육·프로젝트 리더처럼 사람을 이끌고 위기를 돌파하는 역할에 잘 맞아요.",
+      growth: "강한 리더일수록 듣는 귀가 필요해요. 반대 의견을 환영하는 태도가 카리스마를 신뢰로 바꿔 줘요." },
+    { love: "성실하고 계획적인 사랑을 해요. 기념일과 약속을 잘 챙기고 미래를 꼼꼼히 준비하는 믿음직한 연인이에요. 완벽하려는 마음을 조금 내려놓으면 함께하는 시간이 더 즐거워져요.",
+      work: "체계와 학습이 중요한 일, 교육·연구·회계·행정·기획·전문 자격 분야에서 꾸준히 성과를 쌓아요. 공부한 만큼 성장하는 길이 잘 맞아요.",
+      growth: "100점이 아니어도 괜찮아요. 80점에서 일단 내놓고 고쳐 나가는 방식이 오히려 더 멀리 가게 해 줘요." },
+    { love: "감성이 풍부하고 깊은 정서적 교감을 원해요. 겉으로는 담담해 보여도 속으로는 많은 생각과 감정을 품고 있어요. 불안을 혼자 키우지 말고 상대와 나누면 관계가 훨씬 편안해져요.",
+      work: "감수성과 사고력을 살리는 일, 글쓰기·예술·철학·종교·연구·기획처럼 내면의 세계를 표현하는 분야에서 빛나요.",
+      growth: "생각이 많을 때는 작게라도 행동으로 옮겨 보세요. 움직이는 순간 불안이 줄어들어요." },
+    { love: "개성 있고 자유로운 연애를 즐겨요. 다양한 사람과 쉽게 친해지지만, 기분에 따라 태도가 달라져 상대를 헷갈리게 할 수 있어요. 변하지 않는 마음 하나를 꾸준히 보여 주세요.",
+      work: "트렌드와 감각을 살리는 일, 콘텐츠·디자인·여행·패션·마케팅·프리랜서처럼 변화가 많은 분야에서 활기를 찾아요.",
+      growth: "새로움을 좇는 감각에 꾸준함이라는 뿌리를 더하면 반짝이는 재능이 오래가는 실력이 돼요." },
+    { love: "적극적이고 열정적으로 사랑해요. 마음에 들면 바로 다가가고 큰 이벤트로 마음을 표현하기도 해요. 내 속도로 상대를 끌고 가지 않도록 상대의 페이스를 살펴 주세요.",
+      work: "추진력이 필요한 일, 사업·영업·건설·스포츠·이벤트·신규 프로젝트처럼 크게 벌이고 빠르게 움직이는 분야에서 강해요.",
+      growth: "에너지는 충분해요. 쉬는 것도 계획에 넣으면 더 멀리, 더 오래 달릴 수 있어요." },
+    { love: "상대를 묵묵히 돕고 지켜 주는 헌신적인 연인이에요. 상대의 성공을 내 일처럼 기뻐하지만 내 필요는 뒤로 미루는 경향이 있어요. 원하는 것을 말하는 것도 사랑의 일부예요.",
+      work: "누군가를 돕는 자리, 비서·참모·교육·의료·연구 지원·출판처럼 서포트와 전문성이 함께 필요한 분야에서 빛나요.",
+      growth: "다른 사람을 빛나게 하는 만큼 나 자신도 무대에 세워 보세요. 내 공로를 스스로 인정해 주세요." },
+    { love: "맑고 진실한 사랑을 해요. 신중하게 사람을 고르고, 한번 마음을 주면 상대를 지키려는 마음이 강해요. 기준이 높아 상대의 작은 실수에도 실망할 수 있으니 너그러움을 조금 더해 보세요.",
+      work: "신뢰와 정확성이 중요한 일, 공무·교육·법률·의료·문화재 보존·품질 관리처럼 정직함이 무기가 되는 분야에 잘 맞아요.",
+      growth: "완벽하지 않은 나와 타인을 받아들이는 연습이 마음을 훨씬 가볍게 해 줘요." },
+    { love: "센스 있고 다정한 연인이에요. 상대가 필요로 하는 것을 재치 있게 챙기고, 갈등이 생겨도 부드럽게 조율해요. 상대를 챙기느라 지칠 때는 솔직하게 쉬고 싶다고 말해 주세요.",
+      work: "기획·조율·실무 능력이 필요한 일, 프로젝트 관리·인사·디자인·공예·IT·서비스 기획처럼 다재다능함이 강점이 되는 분야에서 인정받아요.",
+      growth: "여러 재능을 하나의 큰 목표로 모으면 '다재다능'이 '대체 불가'가 돼요." },
+    { love: "원하는 사람에게 거침없이 다가가는 정열적인 연인이에요. 생명력이 넘쳐 함께 있으면 활기가 생기지만, 경쟁심이 관계 안으로 들어오지 않도록 주의해요. 이기는 것보다 함께 웃는 것이 더 중요해요.",
+      work: "스스로 길을 만드는 일, 창업·영업·스포츠·요식업·현장 관리처럼 에너지와 실행력이 성과로 이어지는 분야에서 강해요.",
+      growth: "욕심을 목표로 바꾸고 경쟁 상대를 협력자로 바꾸면, 당신의 생명력이 더 큰 판에서 빛나요." }
+  ];
+  SUKU.forEach((s, i) => Object.assign(s, SUKU_MORE[i]));
+
+  const DAY_MASTER_MORE = [
+    { love: "듬직하고 책임감 있는 연인이에요. 상대를 보호하고 이끌려 하지만 자기 생각을 굽히지 않아 부딪힐 때가 있어요. 한 발 물러서 상대의 이야기를 들어 주면 더 큰 나무가 돼요.",
+      work: "기획·교육·경영·건축·공공 분야처럼 무언가를 키우고 이끄는 일에 잘 맞아요. 처음 길을 내는 역할에서 능력이 가장 잘 드러나요.",
+      growth: "곧게 자라는 나무도 바람에 흔들릴 줄 알아야 부러지지 않아요. 유연함을 연습해 보세요." },
+    { love: "부드럽고 다정하며 상대에게 잘 맞춰 주는 연인이에요. 관계를 소중히 여기지만 속마음을 참다 지칠 수 있어요. 서운한 점은 작을 때 말하는 것이 좋아요.",
+      work: "사람과 환경에 맞춰 성과를 내는 일, 디자인·상담·서비스·마케팅·교육처럼 섬세한 감각과 친화력이 필요한 분야에 강해요.",
+      growth: "남의 기대보다 내 마음의 방향을 먼저 확인하면, 덩굴처럼 원하는 곳까지 뻗어 갈 수 있어요." },
+    { love: "솔직하고 열정적인 연인이에요. 좋아하는 마음을 숨기지 않고 표현하며 상대를 환하게 만들어요. 감정이 빨리 달아오르는 만큼 꾸준한 온기를 유지하는 것이 과제예요.",
+      work: "사람 앞에 서고 에너지를 나누는 일, 방송·교육·영업·홍보·공연·리더 역할에서 존재감이 커요.",
+      growth: "모두를 비추려 하기보다 꼭 비춰야 할 곳에 빛을 모으면 더 큰 성과를 낼 수 있어요." },
+    { love: "한 사람을 깊고 따뜻하게 사랑해요. 섬세하게 상대를 챙기지만 서운함을 속으로 쌓아 두는 편이에요. 감정을 작은 불씨일 때 나누면 관계가 오래 따뜻해요.",
+      work: "집중력과 섬세함이 필요한 일, 연구·의료·상담·예술·IT·교육처럼 한 분야를 깊이 파고드는 일에서 빛나요.",
+      growth: "다른 사람을 밝히는 만큼 나 자신을 위한 불씨도 남겨 두세요. 휴식이 열정을 지켜 줘요." },
+    { love: "믿음직하고 변함없는 연인이에요. 쉽게 흔들리지 않아 상대에게 안정감을 주지만, 표현이 무뚝뚝해 오해를 살 수 있어요. 마음을 말로 꺼내 주는 노력이 필요해요.",
+      work: "중심을 잡고 사람을 모으는 일, 경영·행정·부동산·건설·중재·관리직에서 신뢰를 얻어요.",
+      growth: "산은 움직이지 않아도 계절은 바뀌어요. 변화를 받아들이는 유연함이 산을 더 풍요롭게 해요." },
+    { love: "현실적이고 세심하게 상대를 챙기는 연인이에요. 생활 속 작은 배려로 사랑을 표현하지만, 걱정이 많아 상대를 통제하려 할 수 있어요. 믿고 맡기는 연습을 해 보세요.",
+      work: "사람과 일을 길러 내는 분야, 교육·인사·회계·농업·식품·복지·관리처럼 실속과 꼼꼼함이 필요한 일에 잘 맞아요.",
+      growth: "걱정의 절반은 일어나지 않아요. 생각이 많아질 때는 지금 할 수 있는 일 하나에 집중해 보세요." },
+    { love: "의리 있고 화끈한 연인이에요. 좋고 싫음이 분명하고 내 사람은 끝까지 지켜요. 말이 직설적이라 상처를 줄 수 있으니 부드러운 표현을 의식적으로 연습해 보세요.",
+      work: "결단과 실행이 필요한 일, 군·경찰·법조·엔지니어링·스포츠·제조처럼 강단이 필요한 분야에서 강해요.",
+      growth: "쇠는 단련될수록 명검이 돼요. 어려움을 피하지 않는 성격에 부드러움을 더하면 더 날카로워져요." },
+    { love: "세련되고 섬세한 연인이에요. 취향과 기준이 분명해 아무나 쉽게 마음에 들이지 않아요. 작은 말에도 상처받기 쉬우니 서운함을 쌓기보다 바로 표현하는 것이 좋아요.",
+      work: "정교함과 미적 감각이 필요한 일, 디자인·패션·주얼리·의료·금융·분석·IT처럼 디테일이 결과를 좌우하는 분야에서 빛나요.",
+      growth: "보석은 다른 빛을 받아야 더 반짝여요. 완벽하지 않은 사람과 상황도 품어 보세요." },
+    { love: "넓은 마음으로 상대를 품는 자유로운 연인이에요. 서로의 공간을 존중하는 관계를 원하지만, 속마음이 깊어 쉽게 드러내지 않아요. 가끔은 마음 깊은 곳의 이야기를 꺼내 주세요.",
+      work: "흐름을 읽는 일, 무역·유통·여행·IT·전략·투자·연구처럼 넓은 시야와 유연함이 필요한 분야에 강해요.",
+      growth: "흐르는 물도 방향이 있어야 바다에 닿아요. 목표 하나를 정해 꾸준히 흘러가 보세요." },
+    { love: "조용하고 섬세하게 상대를 배려하는 연인이에요. 말없이 필요한 것을 채워 주지만 혼자 고민을 키우다 지칠 수 있어요. 마음속 이야기를 나눌 사람이 꼭 필요해요.",
+      work: "직관과 지혜를 살리는 일, 연구·상담·의료·기획·예술·IT처럼 섬세한 관찰과 분석이 필요한 분야에서 빛나요.",
+      growth: "이슬은 작아도 땅을 적셔요. 스스로를 작게 여기지 말고 생각을 더 자주 표현해 보세요." }
+  ];
+  DAY_MASTER.forEach((d, i) => Object.assign(d, DAY_MASTER_MORE[i]));
+
+  // 월지: 태어난 계절의 기운
+  const MONTH_SEASON = [
+    "한겨울(자월)에 태어나 차분하고 생각이 깊어요. 겉으로 드러내기보다 안에서 에너지를 모으는 시기의 기운이라, 준비가 충분할 때 크게 움직여요.",
+    "늦겨울(축월)에 태어나 인내심이 강하고 현실적이에요. 언 땅 속에서 봄을 준비하는 기운처럼 묵묵히 버티며 때를 기다릴 줄 알아요.",
+    "초봄(인월)에 태어나 시작하는 힘과 진취성이 강해요. 새싹이 언 땅을 뚫고 나오는 기운이라 새로운 일을 여는 데 두려움이 적어요.",
+    "한봄(묘월)에 태어나 생기 있고 부드러운 성장의 기운을 지녔어요. 사람들과 어울리며 자연스럽게 자라나는 친화력이 있어요.",
+    "늦봄(진월)에 태어나 여러 기운을 품은 포용력과 변화 적응력이 있어요. 봄에서 여름으로 넘어가는 문턱처럼 다양한 가능성을 함께 키워요.",
+    "초여름(사월)에 태어나 밝고 활동적이며 머리 회전이 빨라요. 뜨거워지기 시작하는 기운처럼 열정과 계산이 함께 있어요.",
+    "한여름(오월)에 태어나 열정과 표현력이 강해요. 태양이 가장 높이 뜬 시기의 기운이라 존재감이 크고 감정이 뜨거워요.",
+    "늦여름(미월)에 태어나 따뜻하면서도 끈기 있는 기운을 지녔어요. 무르익는 열매처럼 사람과 일을 정성껏 익혀 가는 힘이 있어요.",
+    "초가을(신월)에 태어나 결단력과 실행력이 뛰어나요. 거둘 것을 거두는 시기의 기운이라 판단이 빠르고 현실 감각이 좋아요.",
+    "한가을(유월)에 태어나 정교하고 깔끔한 감각을 지녔어요. 열매를 다듬는 시기의 기운처럼 완성도와 기준을 중요하게 여겨요.",
+    "늦가을(술월)에 태어나 책임감과 의리가 강해요. 한 해를 마무리하는 기운이라 끝까지 지키고 마무리하는 힘이 있어요.",
+    "초겨울(해월)에 태어나 지혜롭고 포용력이 넓어요. 모든 것을 품고 다음을 준비하는 기운이라 생각이 깊고 이해심이 많아요."
+  ];
+
+  // 일지: 생활과 가까운 관계(배우자 자리)에서의 모습
+  const DAY_BRANCH_TEXT = [
+    "가까운 관계에서 섬세하고 영리하게 상대를 살펴요. 생활 속 아이디어가 많고 감정이 풍부해요.",
+    "가까운 사람에게 묵묵하고 한결같아요. 생활은 알뜰하고 현실적이며 신뢰를 천천히 쌓는 편이에요.",
+    "가까운 관계에서도 주도적이에요. 활동적인 생활을 좋아하고 함께 무언가를 시작하는 것을 즐겨요.",
+    "가까운 관계에서 다정하고 섬세해요. 아늑한 생활 공간을 중요하게 여기고 정서적인 교감을 원해요.",
+    "가까운 사람을 넓게 품지만 속을 다 보여 주지는 않아요. 생활 속에 큰 계획과 변화를 품고 있어요.",
+    "가까운 관계에서 활발하고 영리해요. 생활에 자극과 목표가 있을 때 활기를 느끼고 상대에게도 성장을 기대해요.",
+    "가까운 사람 앞에서 감정 표현이 솔직하고 뜨거워요. 함께 즐기는 활동적인 생활을 좋아해요.",
+    "가까운 사람을 정성껏 챙기는 따뜻함이 있어요. 생활 속에서는 자기 방식이 분명해 고집스러운 면도 있어요.",
+    "가까운 관계에서도 실용적이고 재치 있어요. 생활의 문제를 빠르게 해결하지만 변화를 좋아해 한곳에 머물기 어려워해요.",
+    "가까운 사람에게 깔끔하고 분명해요. 생활 공간과 일상의 질서를 중요하게 여기며 기준이 높아요.",
+    "가까운 사람에게 의리 있고 든든해요. 책임감이 강하지만 고집이 생기면 잘 꺾이지 않아요.",
+    "가까운 관계에서 너그럽고 정이 많아요. 편안하고 자유로운 생활을 좋아하며 상대를 넓게 품어요."
+  ];
+
+  const STRENGTH = {
+    strong: { title: "신강(身强) · 내 기운이 강한 사주",
+      text: "일간을 돕는 기운(비겁·인성)이 많아 주관이 뚜렷하고 추진력이 있어요. 스스로 판단하고 밀고 나가는 힘이 강한 대신, 남의 의견을 받아들이는 데 시간이 걸릴 수 있어요. 에너지를 밖으로 쓰는 일(표현·성과·도전)을 할 때 운이 잘 풀려요." },
+    weak: { title: "신약(身弱) · 주변과 함께 크는 사주",
+      text: "일간을 돕는 기운보다 밖으로 쓰는 기운이 많아 주변 상황과 사람에게 민감하게 반응해요. 혼자 밀어붙이기보다 좋은 사람·환경과 함께할 때 능력이 크게 살아나요. 배움과 휴식으로 에너지를 채우는 것이 중요해요." },
+    balanced: { title: "중화(中和) · 균형 잡힌 사주",
+      text: "일간을 돕는 기운과 밖으로 쓰는 기운이 고르게 섞여 있어요. 상황에 따라 앞에 나서기도, 한발 물러서기도 하는 균형 감각이 있어 어느 환경에서도 무난하게 적응해요." }
+  };
+
+  // 십신 그룹별: 없을 때, 일 방식, 올해 들어올 때
+  const TEN_GODS_MORE = [
+    { lack: "비겁이 없어 남과 경쟁하기보다 협력하는 쪽을 택해요. 다만 내 몫을 주장하는 힘이 약할 수 있어요.",
+      work: "독립적으로 일하거나 동료와 겨루며 성장하는 환경에서 힘이 나요.",
+      year: "나와 같은 기운이 들어와 자신감과 독립심이 커져요. 새로운 사람을 만나거나 협업이 늘지만 경쟁과 지출도 함께 늘 수 있어요." },
+    { lack: "식상이 없어 생각을 겉으로 표현하는 데 시간이 걸려요. 글이나 기록으로 생각을 꺼내는 연습이 도움이 돼요.",
+      work: "아이디어와 표현이 결과물이 되는 창작·기획·교육 분야에서 강점이 살아나요.",
+      year: "표현과 창작의 기운이 들어와요. 아이디어와 하고 싶은 말이 늘어나는 해라 새 프로젝트나 취미를 시작하기 좋아요. 말실수만 조심하세요." },
+    { lack: "재성이 없어 돈이나 결과보다 의미와 과정을 중요하게 여겨요. 현실적인 계획을 세우는 습관이 도움이 돼요.",
+      work: "성과가 숫자로 보이는 사업·영업·재무·관리 분야에서 실력을 인정받아요.",
+      year: "재물과 결과의 기운이 들어와요. 일한 만큼 성과가 보이고 현실적인 기회가 늘어나지만, 욕심내 무리하지 않는 것이 중요해요." },
+    { lack: "관성이 없어 규칙과 틀에 얽매이는 것을 답답해해요. 자유로운 만큼 스스로 정한 원칙을 지키는 힘을 기르면 좋아요.",
+      work: "역할과 책임이 분명한 조직, 공공기관이나 전문직에서 신뢰를 쌓아요.",
+      year: "책임과 명예의 기운이 들어와요. 승진·직책·시험처럼 평가받는 일이 생기기 쉽고, 부담도 있지만 그만큼 인정받을 기회예요." },
+    { lack: "인성이 없어 배운 것보다 경험으로 익히는 편이에요. 쉬어 가며 에너지를 채우는 시간을 일부러 만들어 주세요.",
+      work: "공부와 자격이 힘이 되는 연구·교육·상담·전문 분야에서 깊이가 생겨요.",
+      year: "배움과 도움의 기운이 들어와요. 공부·자격증·문서 운이 좋고 윗사람이나 귀인의 도움을 받기 쉬운 해예요. 생각만 하고 실행을 미루지 않도록 해요." }
+  ];
+  TEN_GODS.forEach((g, i) => Object.assign(g, TEN_GODS_MORE[i]));
+
+  const YEAR_BRANCH_TEXT = {
+    yukhap: "올해의 지지가 일지와 육합을 이뤄, 생활과 가까운 관계에 반가운 인연이나 안정이 찾아오기 쉬워요.",
+    samhap: "올해의 지지가 일지와 삼합의 기운을 이뤄, 뜻이 맞는 사람들과 함께 일을 키우기 좋아요.",
+    chung: "올해의 지지가 일지와 충을 이뤄 이사·이직·관계 변화처럼 생활에 움직임이 생기기 쉬워요. 변화를 두려워하기보다 준비된 변화로 만들어 보세요.",
+    wonjin: "올해의 지지가 일지와 원진을 이뤄 가까운 사람과 사소한 서운함이 쌓일 수 있어요. 말 한마디를 더 부드럽게 건네 주세요.",
+    same: "올해의 지지가 일지와 같아 생활의 리듬이 뚜렷해지고 내 방식이 강해지는 해예요.",
+    none: "올해의 지지와 일지 사이에 큰 합이나 충이 없어 생활은 비교적 평온하게 흘러가요."
+  };
+
+  const TRAITS_MORE = {
+    lead: { treat: "결정권을 존중해 주고, 의견을 낼 때는 대안을 함께 제시하면 잘 받아들여요.",
+      conflict: "갈등이 생기면 빨리 결론을 내려 해요. 상대가 생각할 시간을 원할 수 있다는 걸 기억하면 좋아요." },
+    drive: { treat: "함께 움직여 주는 사람을 좋아해요. 계획보다 실행을 먼저 제안하면 금방 마음이 열려요.",
+      conflict: "답답하면 혼자 먼저 행동해 버리기 쉬워요. 움직이기 전에 한 번 상의하는 습관이 필요해요." },
+    express: { treat: "반응과 칭찬에 힘을 얻어요. 작은 표현에도 구체적으로 반응해 주세요.",
+      conflict: "서운함을 감정적으로 드러낼 수 있어요. 감정이 가라앉은 뒤 이야기하면 대화가 훨씬 쉬워져요." },
+    social: { treat: "함께 어울리는 시간을 소중히 여겨요. 사람들 앞에서 세워 주면 크게 고마워해요.",
+      conflict: "갈등을 피하려고 괜찮은 척할 수 있어요. 진짜 마음을 한 번 더 물어봐 주세요." },
+    care: { treat: "고맙다는 말과 작은 보답에 큰 힘을 얻어요. 받기만 하지 말고 먼저 챙겨 주세요.",
+      conflict: "서운해도 참고 넘기다 한꺼번에 지칠 수 있어요. 작은 신호를 놓치지 말아 주세요." },
+    think: { treat: "생각할 시간을 주고 이유와 근거를 설명해 주면 신뢰가 깊어져요.",
+      conflict: "갈등이 생기면 말을 줄이고 혼자 정리하려 해요. 재촉하기보다 기다려 주는 것이 좋아요." },
+    steady: { treat: "약속과 일관성을 중요하게 여겨요. 갑작스러운 변경보다 미리 알려 주는 배려가 필요해요.",
+      conflict: "변화를 강요받으면 고집스러워질 수 있어요. 변화가 필요한 이유를 차근차근 설명해 주세요." },
+    free: { treat: "개인 시간과 공간을 존중해 주면 오히려 더 가까워져요. 간섭보다 신뢰를 보여 주세요.",
+      conflict: "답답함을 느끼면 거리를 두려 해요. 붙잡기보다 숨 쉴 틈을 주는 것이 관계를 지켜요." }
+  };
+  Object.keys(TRAITS_MORE).forEach((k) => Object.assign(TRAITS[k], TRAITS_MORE[k]));
+
+  /* =========================================================
    * 6. 개인 분석 (숙요 + 사주 혼합)
    * ========================================================= */
   function analyzePerson(input, opts) {
@@ -450,11 +663,36 @@
     });
 
     const shared = suku.t.filter((t) => DAY_MASTER[dm].t.includes(t));
-    const dominantGod = godCount.indexOf(Math.max(...godCount));
+    const godOrder = [0, 1, 2, 3, 4].sort((x, y) => godCount[y] - godCount[x]);
+    const dominantGod = godOrder[0];
+    const secondGod = godCount[godOrder[1]] > 0 ? godOrder[1] : null;
+    const missingGods = [0, 1, 2, 3, 4].filter((g) => godCount[g] === 0);
+
+    // 신강·신약: 일간을 돕는 글자(비겁·인성)의 비중, 월지는 두 배로 계산
+    let support = 0, weightSum = 0;
+    list.forEach((p, idx) => {
+      const chars = idx === 2 ? [[BRANCH_ELEM[p.b], 1]] : [[stemElem(p.s), 1], [BRANCH_ELEM[p.b], idx === 1 ? 2 : 1]];
+      chars.forEach(([el, w]) => {
+        const g = (el - dmEl + 5) % 5;
+        weightSum += w;
+        if (g === 0 || g === 4) support += w;
+      });
+    });
+    const supportRatio = support / weightSum;
+    const strength = supportRatio >= 0.5 ? "strong" : supportRatio <= 0.3 ? "weak" : "balanced";
+
+    // 올해의 흐름: 올해 연주의 천간(십신)과 지지(일지와의 관계)
+    const now = new Date();
+    const nowYear = now.getMonth() < 1 || (now.getMonth() === 1 && now.getDate() < 4) ? now.getFullYear() - 1 : now.getFullYear();
+    const nyIdx = (((nowYear - 4) % 60) + 60) % 60;
+    const yearNow = { year: nowYear, s: nyIdx % 10, b: nyIdx % 12 };
+    yearNow.god = (stemElem(yearNow.s) - dmEl + 5) % 5;
+    yearNow.branchRel = branchRelation(pillars.day.b, yearNow.b).type;
 
     return {
       name: input.name, solar, lunar, pillars, si, suku, dm, dmEl, yoEl,
       elemCount, godCount, strongEls, weakEls, score, source, percent, ranked, top, shared, dominantGod,
+      secondGod, missingGods, strength, supportRatio, yearNow,
       headline: `${TRAITS[top[1]].adj} ${TRAITS[top[0]].noun}`,
       outerInner: OUTER_INNER[elemRelation(yoEl, dmEl)](ELEMENTS[yoEl].name, ELEMENTS[dmEl].name)
     };
@@ -506,6 +744,65 @@
     kisei: { label: "위성(危成)", title: "다르기에 배우는 사이", mood: "tense", fx: [0, -8, -2, 12],
       desc: "'위(危)'와 '성(成)'은 서로 다른 가치관이 만나는 관계예요. 처음엔 어색하거나 엇갈리기 쉽지만, 차이를 인정하면 혼자서는 얻지 못할 것을 서로에게서 배워요." }
   };
+  const SUKU_REL_MORE = {
+    mei: { love: "연인으로는 서로를 깊이 이해하는 소울메이트 같은 사이예요. 다만 같은 약점을 공유해서, 둘 다 지치거나 고집을 부릴 때는 함께 가라앉을 수 있어요.",
+      friend: "취향과 생각이 닮아 오래가는 친구가 되기 쉬워요. 서로의 단점을 너그럽게 봐 주는 것이 우정의 비결이에요.",
+      work: "일하는 방식이 비슷해 손발이 잘 맞지만, 같은 부분을 함께 놓칠 수 있어요. 다른 시각을 가진 사람을 곁에 두면 좋아요.",
+      family: "닮은 점이 많아 서로를 가장 잘 이해하지만, 그만큼 서로의 단점에 예민해질 수 있어요.",
+      tip: "서로를 거울삼아 함께 성장하되, 상대에게서 보이는 단점은 내 단점이기도 하다는 것을 기억하세요." },
+    gyotai: { love: "처음 만났을 때부터 낯설지 않은 느낌을 주는 운명적인 인연이에요. 서로의 인생에 깊은 흔적을 남기는 관계라 진지하게 이어지기 쉬워요.",
+      friend: "오래 연락이 끊겨도 다시 만나면 어제 본 듯 편한 친구예요.",
+      work: "서로의 일에 결정적인 영향을 주고받는 관계예요. 한 사람이 다른 사람의 커리어 방향을 바꿔 놓기도 해요.",
+      family: "말로 설명하기 어려운 깊은 유대가 있어요. 서로에게 배워야 할 숙제를 주고받는 관계이기도 해요.",
+      tip: "인연이 깊은 만큼 서로에게 기대가 커지기 쉬워요. 고마움을 자주 표현해 인연을 가꿔 주세요." },
+    eishin: { love: "함께할수록 둘 다 좋은 방향으로 바뀌는 이상적인 연인 관계예요. 서로의 장점을 자연스럽게 끌어내 주어 결혼 상대로도 좋은 궁합으로 꼽혀요.",
+      friend: "서로에게 좋은 영향을 주는 든든한 친구예요. 고민을 나누면 실질적인 도움이 오가요.",
+      work: "함께 일하면 성과가 커지는 최고의 파트너예요. 공동 프로젝트나 동업에도 잘 맞아요.",
+      family: "서로를 북돋아 주는 화목한 관계예요. 함께 있으면 집안 분위기도 밝아져요.",
+      tip: "좋은 관계일수록 당연하게 여기기 쉬워요. 서로의 노력을 알아봐 주면 이 인연이 더 오래 빛나요." },
+    yusui: { love: "함께 있으면 편하고 즐거운 연인이에요. 다만 편안함이 지나치면 설렘이 줄고 서로를 게으르게 만들 수 있어요.",
+      friend: "함께 놀기 가장 좋은 친구 사이예요. 부담 없이 오래 어울리지만, 중요한 결정에서는 냉정한 조언도 필요해요.",
+      work: "분위기는 좋지만 서로 느슨해지기 쉬운 조합이에요. 마감과 역할을 분명히 하면 즐겁게 성과를 낼 수 있어요.",
+      family: "편안하고 정겨운 관계예요. 서로에게 너무 기대지 않도록 각자의 생활을 지켜 주세요.",
+      tip: "편안함 속에 작은 목표나 새로운 경험을 더하면 관계에 생기가 돌아요." },
+    ankai: { love: "첫눈에 강하게 끌리는 드라마 같은 연애가 되기 쉬워요. 감정의 진폭이 커서 뜨겁게 사랑하다가도 크게 부딪힐 수 있어요.",
+      friend: "강렬하게 친해졌다가 갑자기 멀어지기도 하는 관계예요. 적당한 거리를 두면 오래 좋은 자극을 주고받아요.",
+      work: "서로에게 큰 변화를 일으키는 관계예요. 함께하면 판을 바꿀 수 있지만 주도권 다툼이 생기기 쉬우니 역할을 분명히 나누세요.",
+      family: "가까울수록 감정이 크게 오가는 관계예요. 서로의 영역을 존중하는 것이 무엇보다 중요해요.",
+      tip: "가까워질수록 한 걸음 물러서 바라보는 여유가 필요해요. 적당한 거리가 이 강렬한 인연을 좋은 쪽으로 이끌어요." },
+    kisei: { love: "서로 다른 세계를 가진 연인이에요. 처음엔 이해하기 어렵지만 상대를 통해 몰랐던 세상을 알게 되는 관계예요.",
+      friend: "취향은 달라도 서로에게 새로운 시각을 열어 주는 친구예요. 다름을 재미로 받아들이면 좋은 관계가 돼요.",
+      work: "서로 다른 강점을 가진 조합이라 역할을 잘 나누면 시너지가 커요. 다만 오해가 생기기 쉬우니 문서와 확인이 필요해요.",
+      family: "생각이 달라 부딪힐 때가 있지만, 서로를 통해 시야가 넓어지는 관계예요.",
+      tip: "상대를 바꾸려 하기보다 '이런 방식도 있구나' 하고 배우는 자세가 이 관계를 성장으로 이끌어요." }
+  };
+  Object.keys(SUKU_REL_MORE).forEach((k) => Object.assign(SUKU_REL[k], SUKU_REL_MORE[k]));
+
+  const STEM_TIP = {
+    hap: "합은 서로에게 묶이는 힘이라, 상대에게 지나치게 기대지 않도록 각자의 영역도 지켜 주세요.",
+    chung: "부딪힐 때는 누가 옳은지보다 서로의 방식 차이를 이해하는 데 초점을 맞추면 오히려 균형 잡힌 팀이 돼요.",
+    same: "같은 목표를 향할 때는 최고의 동료지만, 같은 것을 원할 때는 경쟁자가 될 수 있으니 역할을 나눠 보세요.",
+    feeds: "주는 쪽이 지치지 않도록 받는 쪽도 고마움을 표현하고 작은 보답을 해 주세요.",
+    rules: "주도하는 쪽은 상대의 속도를 존중하고, 맞춰 가는 쪽은 불편함을 참지 말고 말하는 것이 좋아요."
+  };
+  const stemTipKey = (t) => (t === "aFeedsB" || t === "bFeedsA" ? "feeds" : t === "aRulesB" || t === "bRulesA" ? "rules" : t);
+
+  const DAY_BRANCH_REL_EXTRA = {
+    yukhap: "함께 생활하거나 한 팀으로 오래 지낼수록 좋은 점이 드러나는 조합이에요.",
+    samhap: "공통의 목표가 있을 때 특히 힘이 커지니, 함께 이루고 싶은 것을 정해 보세요.",
+    chung: "생활 공간과 일정에서 각자의 몫을 분명히 나누면 부딪힘이 크게 줄어요.",
+    wonjin: "서운한 일은 하루를 넘기지 말고 짧게라도 이야기하는 규칙을 만들어 보세요.",
+    same: "비슷한 만큼 편하지만, 같은 단점도 함께 커질 수 있어요.",
+    none: ""
+  };
+
+  const DIM_LEVERAGE = {
+    attract: "두 사람 사이의 끌림이 가장 큰 강점이에요. 함께하는 즐거운 시간을 의식적으로 늘리면 다른 부족함도 자연스럽게 채워져요.",
+    talk: "대화가 잘 통하는 것이 이 관계의 가장 큰 무기예요. 문제가 생기면 미루지 말고 바로 이야기로 풀어 보세요.",
+    stable: "함께 있을 때의 안정감이 이 관계의 뿌리예요. 일상의 루틴을 함께 만들어 가면 관계가 더 단단해져요.",
+    grow: "서로를 성장시키는 힘이 가장 큰 강점이에요. 함께 도전할 목표를 세우면 관계에 활력이 생겨요."
+  };
+
   const PAIR_OF = { "栄": "eishin", "親": "eishin", "友": "yusui", "衰": "yusui", "安": "ankai", "壊": "ankai", "危": "kisei", "成": "kisei" };
   const DISTANCE = {
     near: { name: "근거리", factor: 1, text: "관계의 성질이 가장 강하고 빠르게 드러나요." },
@@ -733,6 +1030,22 @@
     const weak = P.weakEls.length ? P.weakEls : [P.elemCount.indexOf(Math.min(...P.elemCount))];
     const luckyEl = ELEMENTS[weak[0]];
     const god = TEN_GODS[P.dominantGod];
+    const supportPct = Math.round(P.supportRatio * 100);
+    const monthEl = BRANCH_ELEM[P.pillars.month.b];
+    const seasonLink = monthEl === P.dmEl
+      ? `태어난 달의 기운이 일간(${ELEMENTS[P.dmEl].name})과 같아 본래의 성향이 더 힘을 얻어요.`
+      : (monthEl + 1) % 5 === P.dmEl
+        ? `태어난 달의 기운(${ELEMENTS[monthEl].name})이 일간(${ELEMENTS[P.dmEl].name})을 생해 주어, 환경의 도움을 받으며 자라는 타입이에요.`
+        : `태어난 달의 기운(${ELEMENTS[monthEl].name})은 일간(${ELEMENTS[P.dmEl].name})과 다른 결이라, 타고난 성향을 환경에 맞게 다듬으며 성장해요.`;
+    const Y = P.yearNow;
+    const yGod = TEN_GODS[Y.god];
+    const yEl = stemElem(Y.s), yBEl = BRANCH_ELEM[Y.b];
+    const yearElLine = P.weakEls.includes(yEl) || P.weakEls.includes(yBEl)
+      ? `올해 들어오는 ${ELEMENTS[P.weakEls.includes(yEl) ? yEl : yBEl].name} 기운은 ${name}에게 부족했던 기운이라, 평소보다 균형이 잡히고 막혔던 일이 풀리기 쉬운 해예요.`
+      : P.strongEls.includes(yEl) || P.strongEls.includes(yBEl)
+        ? `올해 들어오는 ${ELEMENTS[P.strongEls.includes(yEl) ? yEl : yBEl].name} 기운은 이미 넉넉한 기운이라, 장점이 커지는 만큼 과해지지 않도록 속도 조절이 필요해요.`
+        : `숙요로 보면 ${name}의 본명숙은 ${suku.yo}曜에 속해, ${YO[suku.yo].day}에 중요한 일을 시작하거나 마음을 정리하면 좋아요.`;
+    cautions.push(TRAITS[t2].caution);
 
     return `
       <div class="result-header">
@@ -774,14 +1087,49 @@
         </article>
 
         <article class="r-card">
+          <h4>타고난 계절</h4>
+          <p class="mini-label">월지 ${BRANCHES[P.pillars.month.b]}(${BRANCHES_H[P.pillars.month.b]}) · ${ELEMENTS[BRANCH_ELEM[P.pillars.month.b]].name}의 달</p>
+          <p class="body-text">${MONTH_SEASON[P.pillars.month.b]} ${seasonLink}</p>
+        </article>
+
+        <article class="r-card">
+          <h4>기운의 세기</h4>
+          <p class="mini-label">${STRENGTH[P.strength].title}</p>
+          <div class="meter" aria-label="일간을 돕는 기운 ${supportPct}%"><div class="meter-fill" style="width:${supportPct}%"></div><span class="meter-mark" style="left:30%"></span><span class="meter-mark" style="left:50%"></span></div>
+          <p class="meter-legend"><span>신약</span><span>중화</span><span>신강</span></p>
+          <p class="body-text">${STRENGTH[P.strength].text}</p>
+        </article>
+
+        <article class="r-card">
           <h4>사주 구조에서 보이는 힘</h4>
-          <p class="mini-label">가장 많은 십신: ${god.name}(${god.hanja})</p>
-          <p class="body-text">${god.text}</p>
+          <p class="mini-label">가장 많은 십신: ${god.name}(${god.hanja})${P.secondGod !== null ? ` · 다음: ${TEN_GODS[P.secondGod].name}(${TEN_GODS[P.secondGod].hanja})` : ""}</p>
+          <p class="body-text">${god.text}${P.secondGod !== null ? ` 여기에 ${TEN_GODS[P.secondGod].name}의 기운이 더해져, ${TEN_GODS[P.secondGod].text}` : ""}</p>
+          ${P.missingGods.length ? `<p class="body-text small">${P.missingGods.map((g) => TEN_GODS[g].lack).join(" ")}</p>` : ""}
         </article>
 
         <article class="r-card span-2">
           <h4>성향 지도</h4>
           ${traitBars(P)}
+        </article>
+
+        <article class="r-card span-2">
+          <h4>연애·가까운 관계</h4>
+          <div class="facets">
+            <div class="facet"><p class="src-tag">숙요 · ${sukuName(P.si)}</p><p class="body-text">${suku.love}</p></div>
+            <div class="facet"><p class="src-tag">사주 · ${STEMS[P.dm]}${ELEMENTS[P.dmEl].name} 일간</p><p class="body-text">${dmInfo.love}</p></div>
+            <div class="facet"><p class="src-tag">사주 · 일지 ${BRANCHES[P.pillars.day.b]}(${BRANCHES_H[P.pillars.day.b]})</p><p class="body-text">${DAY_BRANCH_TEXT[P.pillars.day.b]}</p></div>
+          </div>
+          <p class="body-text summary-line"><b>종합하면</b> ${TRAITS[t1].rel} ${TRAITS[t2].rel} ${gwaWa(name)} 가까워지고 싶은 사람에게 건넬 한마디: ${TRAITS[t1].treat}</p>
+        </article>
+
+        <article class="r-card span-2">
+          <h4>일·적성</h4>
+          <div class="facets">
+            <div class="facet"><p class="src-tag">숙요 · ${sukuName(P.si)}</p><p class="body-text">${suku.work}</p></div>
+            <div class="facet"><p class="src-tag">사주 · ${STEMS[P.dm]}${ELEMENTS[P.dmEl].name} 일간</p><p class="body-text">${dmInfo.work}</p></div>
+            <div class="facet"><p class="src-tag">사주 · ${god.name} 중심 구조</p><p class="body-text">${god.work}</p></div>
+          </div>
+          <p class="body-text summary-line"><b>종합하면</b> ${TRAITS[t1].work} ${TRAITS[t2].work}</p>
         </article>
 
         <article class="r-card">
@@ -793,13 +1141,21 @@
           <ul class="bullets">${cautions.map((s) => `<li>${s}</li>`).join("")}</ul>
         </article>
 
-        <article class="r-card">
-          <h4>관계 스타일</h4>
-          <p class="body-text">${TRAITS[t1].rel} ${TRAITS[t2].rel}</p>
+        <article class="r-card span-2">
+          <h4>${Y.year}년의 흐름</h4>
+          <p class="mini-label">${Y.year}년은 ${STEMS[Y.s]}${BRANCHES[Y.b]}(${STEMS_H[Y.s]}${BRANCHES_H[Y.b]})년 · ${name}에게는 ${yGod.name}(${yGod.hanja})의 해</p>
+          <p class="body-text">${yGod.year} ${YEAR_BRANCH_TEXT[Y.branchRel]}</p>
+          <p class="body-text">${yearElLine}</p>
         </article>
-        <article class="r-card">
-          <h4>일하는 방식</h4>
-          <p class="body-text">${TRAITS[t1].work} ${TRAITS[t2].work}</p>
+
+        <article class="r-card span-2">
+          <h4>성장을 위한 조언</h4>
+          <ul class="bullets">
+            <li>${suku.growth}</li>
+            <li>${dmInfo.growth}</li>
+            <li>${TRAITS[t1].conflict}</li>
+            ${P.weakEls.length ? `<li>부족한 ${ELEMENTS[P.weakEls[0]].name} 기운은 ${ELEMENTS[P.weakEls[0]].act} 같은 활동으로 채울 수 있어요. 작은 습관 하나가 마음의 균형을 잡아 줘요.</li>` : ""}
+          </ul>
         </article>
 
         <article class="r-card">
@@ -860,6 +1216,18 @@
     }
   }
 
+  function elementCompare(A, B) {
+    const max = Math.max(...A.elemCount, ...B.elemCount, 1);
+    return `<div class="elem-compare">${ELEMENTS.map((e, i) => `
+      <div class="ec-row">
+        <div class="ec-side ec-left"><span class="elem-num">${A.elemCount[i]}</span><div class="ec-bar ${e.cls}" style="width:${A.elemCount[i] / max * 100}%"></div></div>
+        <span class="elem-name ${e.cls}-text">${e.name}</span>
+        <div class="ec-side"><div class="ec-bar ${e.cls}" style="width:${B.elemCount[i] / max * 100}%"></div><span class="elem-num">${B.elemCount[i]}</span></div>
+      </div>`).join("")}
+      <div class="ec-row ec-names"><span>${A.name}</span><span></span><span>${B.name}</span></div>
+    </div>`;
+  }
+
   function personMini(P) {
     const dmInfo = DAY_MASTER[P.dm];
     return `<div class="person-mini">
@@ -880,7 +1248,7 @@
 
     const sajuNotes = [
       stemNote(C.st, A, B),
-      branchNote(C.db, "두 사람의 일지(생활·배우자 자리)", A.pillars.day.b, B.pillars.day.b),
+      `${branchNote(C.db, "두 사람의 일지(생활·배우자 자리)", A.pillars.day.b, B.pillars.day.b)} ${DAY_BRANCH_REL_EXTRA[C.db.type]}`.trim(),
       branchNote(C.yb, `${a}의 ${ANIMALS[A.pillars.year.b]}띠와 ${b}의 ${ANIMALS[B.pillars.year.b]}띠`, A.pillars.year.b, B.pillars.year.b)
     ];
     C.fills.forEach((f) => sajuNotes.push(`${f.to.name}에게 부족한 ${ELEMENTS[f.el].name} 기운을 ${f.from.name} 쪽이 넉넉히 갖고 있어 서로를 채워 줘요.`));
@@ -891,6 +1259,10 @@
       ? `두 사람 모두 '${TRAITS[ta].noun}' 기질이 가장 강해요. 공감대가 크지만 같은 지점에서 부딪힐 수 있으니 역할을 나누어 보세요.`
       : `${eunNeun(a)} ${TRAITS[A.top[1]].adj} ${TRAITS[ta].noun}, ${eunNeun(b)} ${TRAITS[B.top[1]].adj} ${TRAITS[tb].noun} 유형이에요. ${a}의 ${gwaWa(TRAITS[ta].core)} ${b}의 ${iGa(TRAITS[tb].core)} 만나 서로의 빈자리를 채워 줄 수 있어요.`;
 
+    const sharedTraits = A.top.filter((t) => B.top.includes(t));
+    const sumEl = ELEMENTS.map((e, i) => A.elemCount[i] + B.elemCount[i]);
+    const richEl = sumEl.indexOf(Math.max(...sumEl)), poorEl = sumEl.indexOf(Math.min(...sumEl));
+    const elemCompareLine = `두 사람을 합치면 ${ELEMENTS[richEl].name} 기운이 가장 많고 ${ELEMENTS[poorEl].name} 기운이 가장 적어요. 함께 있을 때 ${iGa(ELEMENTS[richEl].kw)} 두드러지고, ${ELEMENTS[poorEl].name} 기운을 채우는 ${ELEMENTS[poorEl].act.split(",")[0]} 같은 활동을 함께하면 균형이 잡혀요.`;
     const level = (v) => (v >= 65 ? "high" : v < 45 ? "low" : "mid");
     const rel = REL_TYPES[C.relType];
     const lowKey = DIMS[C.lowDim].key;
@@ -927,27 +1299,65 @@
           <p class="legend">점수는 숙요 관계와 사주 관계가 각 축에 주는 영향을 합산한 값이며, 종합 점수는 '${rel.name}' 관계에서 중요한 축에 가중치를 둔 것이에요.</p>
         </article>
 
-        <article class="r-card">
+        <article class="r-card span-2">
           <h4>마음의 결 · 숙요</h4>
-          <p class="mini-label">${info.label} — ${info.title}</p>
-          ${distLine}
+          <p class="mini-label">${info.label} — ${info.title}${sr.distance ? ` · ${DISTANCE[sr.distance].name}` : ""}</p>
           <p class="body-text">${roleLine} ${info.desc}</p>
+          ${sr.distance ? `<p class="body-text small">${DISTANCE[sr.distance].name}: ${DISTANCE[sr.distance].text} 같은 ${info.label} 관계라도 근거리일수록 영향이 크고 빠르게 나타나요.</p>` : ""}
+          <p class="body-text"><b>${josa(rel.name, "으로", "로")} 만나면</b> ${info[C.relType]}</p>
+        </article>
+
+        <article class="r-card span-2">
+          <h4>기운의 흐름 · 사주</h4>
+          <ul class="bullets">${sajuNotes.map((n) => `<li>${n}</li>`).join("")}</ul>
+          <p class="body-text small">${STEM_TIP[stemTipKey(C.st.type)]}</p>
         </article>
 
         <article class="r-card">
-          <h4>기운의 흐름 · 사주</h4>
-          <ul class="bullets">${sajuNotes.map((n) => `<li>${n}</li>`).join("")}</ul>
+          <h4>두 사람의 오행</h4>
+          ${elementCompare(A, B)}
+          <p class="body-text small">${elemCompareLine}</p>
         </article>
 
         <article class="r-card">
           <h4>성향의 조합</h4>
+          <div class="chip-cols">
+            <div><p class="src-tag">${a}</p>${A.top.map((t) => `<span class="badge">${TRAITS[t].name}</span>`).join(" ")}</div>
+            <div><p class="src-tag">${b}</p>${B.top.map((t) => `<span class="badge">${TRAITS[t].name}</span>`).join(" ")}</div>
+          </div>
           <p class="body-text">${traitLine}</p>
+          ${sharedTraits.length ? `<p class="body-text small">두 사람이 함께 가진 성향: ${sharedTraits.map((t) => TRAITS[t].name).join("·")}. 이 부분에서는 말하지 않아도 서로를 이해해요.</p>` : ""}
+        </article>
+
+        <article class="r-card span-2">
+          <h4>서로를 대하는 법</h4>
+          <div class="facets two">
+            <div class="facet"><p class="src-tag">${eulReul(a)} 대할 때</p><p class="body-text">${TRAITS[ta].treat} ${DAY_BRANCH_TEXT[A.pillars.day.b]}</p></div>
+            <div class="facet"><p class="src-tag">${eulReul(b)} 대할 때</p><p class="body-text">${TRAITS[tb].treat} ${DAY_BRANCH_TEXT[B.pillars.day.b]}</p></div>
+          </div>
         </article>
 
         <article class="r-card">
+          <h4>갈등이 생기면</h4>
+          <ul class="bullets">
+            <li><b>${a}</b>: ${TRAITS[ta].conflict}</li>
+            <li><b>${b}</b>: ${TRAITS[tb].conflict}</li>
+          </ul>
+        </article>
+
+        <article class="r-card">
+          <h4>${A.yearNow.year}년의 두 사람</h4>
+          <p class="body-text">올해 ${ege(a)}는 ${TEN_GODS[A.yearNow.god].name}의 해, ${ege(b)}는 ${TEN_GODS[B.yearNow.god].name}의 해예요. ${A.yearNow.god === B.yearNow.god ? "같은 흐름을 타는 해라 서로의 고민을 누구보다 잘 이해할 수 있어요." : "서로 다른 과제를 안고 있는 해라, 상대의 변화를 응원하고 기다려 주는 마음이 필요해요."}</p>
+        </article>
+
+        <article class="r-card span-2">
           <h4>관계를 위한 조언</h4>
           <p class="mini-label">가장 보완이 필요한 축: ${DIMS[C.lowDim].name} · 가장 강한 축: ${DIMS[C.highDim].name}</p>
-          <p class="body-text">${ADVICE[C.relType][lowKey]}</p>
+          <ul class="bullets">
+            <li>${DIM_LEVERAGE[DIMS[C.highDim].key]}</li>
+            <li>${ADVICE[C.relType][lowKey]}</li>
+            <li>${info.tip}</li>
+          </ul>
         </article>
       </div>
 
